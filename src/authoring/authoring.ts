@@ -173,6 +173,7 @@ export const REPORT_REASON_LABEL: Record<QuestionReportReason, string> = {
   QUESTION: "L'énoncé",
   IMAGE: "L'image",
   ANSWERS: 'Les réponses',
+  COPYRIGHT: 'Droits d’auteur',
 }
 
 /** « L'énoncé, Les réponses ». */
@@ -199,6 +200,8 @@ export interface TopicWorkshop {
   permissions: TopicPermissions
   /** Titres par palier saisis par le créateur (`{ fr: { OR: "Connétable" } }`) ; vide ou absent : repli partout. */
   titles?: import('./titles.js').TopicTitles | null
+  /** Motif de fermeture par la modération (2026-11-15) ; absent ou `null` : sujet ouvert. */
+  closedReason?: string | null
 }
 export interface ReportDetail {
   topicId: string

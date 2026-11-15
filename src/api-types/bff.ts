@@ -44,6 +44,10 @@ export interface MeView {
   birthDate?: string | null
   /** Vrai si la date de naissance doit être demandée avant de jouer (compte récent sans date). Absent : `false`. */
   birthDateRequired?: boolean
+  /** Version des CGU en vigueur (2026-11-15), à renvoyer à l'acceptation ; `null` = aucune exigée. */
+  termsVersion?: string | null
+  /** Faux : l'app présente les CGU avant de jouer (`PUT /api/me/terms`). */
+  termsUpToDate?: boolean
 }
 
 /** `PUT /api/me/birth-date`. */
@@ -108,6 +112,8 @@ export interface TopicCardView {
   questionsCount: number
   followed: boolean
   status: TopicStatus
+  /** Badge « Officiel » (2026-11-15) : sujet éditorial de Joutio ; absent d'un BFF plus ancien. */
+  official?: boolean
 }
 
 /** `GET /api/home` : rails de l'Accueil. */
@@ -203,6 +209,8 @@ export interface TopicRefView {
   pictogramUrl: string | null
   /** Titres thématiques par langue puis palier (`{ fr: { OR: "Connétable" } }`) ; absent : repli « palier · sujet ». */
   titles?: Record<string, Record<string, string>> | null
+  /** Badge « Officiel » (2026-11-15). */
+  official?: boolean
 }
 
 export interface UserRefView {
@@ -299,6 +307,8 @@ export interface TopicStatView {
   pictogramUrl: string | null
   games: number
   xp: number
+  /** Badge « Officiel » (2026-11-15). */
+  official?: boolean
 }
 
 /** `GET /api/profiles/{id}/head-to-head?against=` : bilan des duels communs. */
@@ -338,7 +348,8 @@ export interface ChallengeView {
 }
 
 export type UserReportReason = 'HARASSMENT' | 'HATE_SPEECH' | 'INAPPROPRIATE_CONTENT' | 'CHEATING' | 'SPAM' | 'OTHER'
-export type QuestionReportReason = 'QUESTION' | 'IMAGE' | 'ANSWERS'
+/** `COPYRIGHT` (2026-11-15) : image ou contenu protégé (droit d'auteur, droit à l'image). */
+export type QuestionReportReason = 'QUESTION' | 'IMAGE' | 'ANSWERS' | 'COPYRIGHT'
 
 export type BadgeFamily =
   | 'VOLUME'
@@ -417,4 +428,32 @@ export interface SuggestionView {
   avatarOptions: string | null
   names: TopicNames | null
   suspended: boolean
+  /** Sujet éditorial de Joutio (badge « Officiel », 2026-11-15). */
+  official?: boolean
 }
+
+/** Motif d'une notification de contenu illicite (LCEN/DSA, 2026-11-15). */
+export type ContentNoticeCategory = 'COPYRIGHT' | 'IMAGE_RIGHTS' | 'IMPERSONATION' | 'OTHER_ILLEGAL'
+
+/** `POST /api/public/content-notices` : notification de contenu illicite, avec ou sans compte. */
+export interface ContentNoticeRequest {
+  name: string
+  email: string
+  quality: 'RIGHTS_HOLDER' | 'REPRESENTATIVE' | 'THIRD_PARTY'
+  /** Lien du contenu visé, par exemple `go.joutio.com/t/{topicId}`. */
+  contentUrl: string
+  category: ContentNoticeCategory
+  /** 20 à 4 000 caractères. */
+  description: string
+  rightsEvidence?: string
+  goodFaith: boolean
+}
+
+/** Endpoint des notifications de contenu. */
+export const CONTENT_NOTICES_ENDPOINT = '/api/public/content-notices'
+
+/** Motifs proposés pour un sujet, dans l'ordre d'affichage. */
+export const CONTENT_NOTICE_CATEGORIES: readonly ContentNoticeCategory[] = ['COPYRIGHT', 'IMAGE_RIGHTS', 'IMPERSONATION', 'OTHER_ILLEGAL']
+
+/** Longueur minimale de la description (`ContentNoticeRequest` du BFF). */
+export const CONTENT_NOTICE_MIN_DESCRIPTION = 20
