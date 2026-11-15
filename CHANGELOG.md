@@ -1,3 +1,9 @@
+## [4.1.0](https://github.com/joutio/joutio-client/compare/v4.0.0...v4.1.0) (2026-11-15)
+
+### Features
+
+* **profile:** dated titles and badges, latest titles label ([8b79016](https://github.com/joutio/joutio-client/commit/8b790163e4ca715de526fa45e14bcb851245a7e5))
+
 ## [4.0.0](https://github.com/joutio/joutio-client/compare/v3.0.0...v4.0.0) (2026-11-15)
 
 ### ⚠ BREAKING CHANGES
