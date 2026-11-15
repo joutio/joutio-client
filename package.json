@@ -1,5 +1,5 @@
 {
-  "name": "@joutio/client-domain",
+  "name": "@joutio/client",
   "version": "3.0.0",
   "description": "Domaine client partagé de Joutio (web, mobile) : TypeScript pur, sans React, DOM ni I/O.",
   "license": "UNLICENSED",
@@ -7,7 +7,7 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/joutio/joutio-client-domain.git"
+    "url": "https://github.com/joutio/joutio-client.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -53,6 +53,10 @@
     "./share": {
       "types": "./dist/share/index.d.ts",
       "import": "./dist/share/index.js"
+    },
+    "./i18n": {
+      "types": "./dist/i18n/index.d.ts",
+      "import": "./dist/i18n/index.js"
     }
   },
   "scripts": {
