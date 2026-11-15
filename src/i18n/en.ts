@@ -422,7 +422,7 @@ export const en: Messages = {
   'profile.titlesError': "Couldn't load your titles",
   'profile.noTitlesTitle': "No titles yet",
   'profile.noTitlesText': "Progress in a topic to earn your first title.",
-  'profile.lastTitles': "Best titles",
+  'profile.lastTitles': "Latest titles",
   'profile.lastGames': "Latest games",
   'profile.topicsError': "Couldn't load your topics",
   'profile.noTopicsTitle': "No topics played",

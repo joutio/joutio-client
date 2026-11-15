@@ -259,6 +259,8 @@ export interface TitleView {
   tierRemainingXp: number
   nextTier: MasteryTier | null
   topic: TopicRefView
+  /** Date de déblocage du palier (ISO-8601) ; la liste est triée du plus récent au plus ancien. */
+  unlockedAt: string
 }
 
 /** `{ id }` renvoyé par une création (`IdResponse` du SDK). */
@@ -377,6 +379,8 @@ export interface BadgeItemView {
   earned: boolean
   /** Compteur courant, plafonné à `target`. */
   progress: number
+  /** Date d'obtention (ISO-8601), `null` si le badge n'est pas acquis. */
+  earnedAt: string | null
 }
 
 /** `GET /api/profiles/{id}/badges` : collection par famille. */

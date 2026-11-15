@@ -421,7 +421,7 @@ export const fr = {
   'profile.titlesError': "Impossible de charger tes titres",
   'profile.noTitlesTitle': "Aucun titre pour l'instant",
   'profile.noTitlesText': "Progresse dans un sujet pour décrocher ton premier titre.",
-  'profile.lastTitles': "Meilleurs titres",
+  'profile.lastTitles': "Derniers titres",
   'profile.lastGames': "Dernières parties",
   'profile.topicsError': "Impossible de charger tes sujets",
   'profile.noTopicsTitle': "Aucun sujet joué",
