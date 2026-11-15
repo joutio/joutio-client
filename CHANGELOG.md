@@ -1,3 +1,14 @@
+## [4.0.0](https://github.com/joutio/joutio-client/compare/v3.0.0...v4.0.0) (2026-11-15)
+
+### ⚠ BREAKING CHANGES
+
+* **i18n:** the package name changes from @joutio/client-domain to @joutio/client.
+
+### Features
+
+* **api-types:** official topics, content notices and terms acceptance ([09f76e1](https://github.com/joutio/joutio-client/commit/09f76e18476f485db15047e9a08af67613b9ccb3))
+* **i18n:** rename the package to @joutio/client and share the FR/EN texts ([ab487a1](https://github.com/joutio/joutio-client/commit/ab487a18afea95b4d66b05129a465ac570b756f7))
+
 ## [3.0.0](https://github.com/joutio/joutio-client-domain/compare/v2.9.0...v3.0.0) (2026-11-14)
 
 ### ⚠ BREAKING CHANGES
