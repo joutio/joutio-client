@@ -1,3 +1,13 @@
+## [5.0.0](https://github.com/joutio/joutio-client/compare/v4.1.0...v5.0.0) (2026-11-16)
+
+### ⚠ BREAKING CHANGES
+
+* provisional is removed from progression, leaderboard, player card, room opponent and game result views; result.unranked, profile.unranked, profile.provisional, topic.provisional, mobile.ds.provisional and mobile.profile.rankAfter keys are removed.
+
+### Features
+
+* rooms waiting for the viewer, room presence, topic name check ([d9cd724](https://github.com/joutio/joutio-client/commit/d9cd7249da88be715a9fbd18b01357d27f45b13f))
+
 ## [4.1.0](https://github.com/joutio/joutio-client/compare/v4.0.0...v4.1.0) (2026-11-15)
 
 ### Features
