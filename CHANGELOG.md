@@ -1,3 +1,9 @@
+## [5.1.0](https://github.com/joutio/joutio-client/compare/v5.0.0...v5.1.0) (2026-11-16)
+
+### Features
+
+* **i18n:** keyboard toolbar done label ([8c5b776](https://github.com/joutio/joutio-client/commit/8c5b7767b0343e5288018c5064397532997aefb3))
+
 ## [5.0.0](https://github.com/joutio/joutio-client/compare/v4.1.0...v5.0.0) (2026-11-16)
 
 ### ⚠ BREAKING CHANGES
