@@ -56,7 +56,6 @@ export interface GameResultView {
     rating: number
     peakRating: number
     ratedGames: number
-    provisional: boolean
   }
   /** Maîtrise du sujet après la partie (XP dans le sujet, gain, palier). */
   topicMastery: {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyRoomNotification, emptyRoom, preparationComplete, preparationStep, roomFailureKind, waitingStatusLabel } from './room.js'
+import { applyRoomNotification, applyRoomPresence, emptyRoom, isWaitingForViewer, preparationComplete, preparationStep, roomFailureKind, roomsWaitingForViewer, waitingStatusLabel, type RoomView } from './room.js'
 import { applyMatchmakingNotification, emptyMatchmaking } from './matchmaking.js'
 import type { RoomNotification } from './room-notification.js'
 
@@ -72,5 +72,57 @@ describe('applyMatchmakingNotification', () => {
     const matched = applyMatchmakingNotification(searching, { type: 'MATCHED', ticketId: 'm1', roomId: 'r1', opponentId: 'p2', vsBot: false, opponent: null })
     expect(matched.status).toBe('MATCHED')
     expect(matched.roomId).toBe('r1')
+  })
+})
+
+describe('roomsWaitingForViewer', () => {
+  const view = (overrides: Partial<RoomView>): RoomView => ({
+    roomId: 'r1',
+    topic: { topicId: 't1', names: { fr: 'Sujet' }, category: 'GENERAL', imageUrl: null, pictogramUrl: null } as unknown as RoomView['topic'],
+    status: 'WAITING_PLAYERS',
+    vsBot: false,
+    canCancel: true,
+    opponent: null,
+    initiatorPresent: false,
+    participantPresent: true,
+    gameId: null,
+    createdAt: '2026-11-16T10:00:00Z',
+    expiresAt: '2026-11-16T11:00:00Z',
+    updatedAt: '2026-11-16T10:00:00Z',
+    ...overrides,
+  })
+
+  it('counts rooms where the opponent waits for the viewer, initiator or guest', () => {
+    expect(isWaitingForViewer(view({}))).toBe(true)
+    expect(isWaitingForViewer(view({ canCancel: false, initiatorPresent: true, participantPresent: false }))).toBe(true)
+    expect(roomsWaitingForViewer([view({}), view({ roomId: 'r2', canCancel: false, initiatorPresent: true, participantPresent: false })])).toBe(2)
+  })
+
+  it('ignores rooms where the viewer is there, nobody waits, a bot plays or preparation started', () => {
+    expect(isWaitingForViewer(view({ initiatorPresent: true }))).toBe(false)
+    expect(isWaitingForViewer(view({ participantPresent: false }))).toBe(false)
+    expect(isWaitingForViewer(view({ vsBot: true }))).toBe(false)
+    expect(isWaitingForViewer(view({ status: 'FETCHING_PLAYERS' }))).toBe(false)
+    expect(roomsWaitingForViewer(undefined)).toBe(0)
+  })
+})
+
+describe('applyRoomPresence', () => {
+  const room = (overrides: Partial<RoomView>): RoomView =>
+    ({ roomId: 'r1', status: 'WAITING_PLAYERS', vsBot: false, canCancel: true, initiatorPresent: false, participantPresent: false, ...overrides }) as RoomView
+  const at = '2026-11-16T10:00:00Z'
+
+  it('sets the opponent presence for an initiator and my own presence', () => {
+    expect(applyRoomPresence([room({})], { roomId: 'r1', playerId: 'p2', present: true, at }, 'p1')?.[0]?.participantPresent).toBe(true)
+    expect(applyRoomPresence([room({})], { roomId: 'r1', playerId: 'p1', present: true, at }, 'p1')?.[0]?.initiatorPresent).toBe(true)
+  })
+
+  it('sets the initiator presence for a guest viewer', () => {
+    const next = applyRoomPresence([room({ canCancel: false, initiatorPresent: true })], { roomId: 'r1', playerId: 'p1', present: false, at }, 'p2')
+    expect(next?.[0]?.initiatorPresent).toBe(false)
+  })
+
+  it('returns undefined for an unknown room', () => {
+    expect(applyRoomPresence([room({})], { roomId: 'r9', playerId: 'p2', present: true, at }, 'p1')).toBeUndefined()
   })
 })

@@ -78,8 +78,6 @@ export interface ProgressionView {
   rating: number
   peakRating: number
   ratedGames: number
-  /** Moins de parties classées que le seuil : le rang n'est pas encore affiché comme acquis. */
-  provisional: boolean
 }
 
 export interface DuelStatsView {
@@ -195,7 +193,6 @@ export interface LeaderboardEntryView {
   country: string | null
   /** Elo global (bordure d'avatar). */
   rating: number
-  provisional: boolean
   totalXp: number
   monthlyXp: number
   suspended: boolean
@@ -223,7 +220,6 @@ export interface UserRefView {
 /** `RoomView.opponent` / notification `MATCHED` : adversaire enrichi par le BFF (Elo, pays). */
 export interface RoomOpponentView extends UserRefView {
   rating: number | null
-  provisional: boolean | null
   country: string | null
 }
 
@@ -327,7 +323,6 @@ export interface PlayerCardView {
   pseudonym: string
   avatarOptions: string | null
   rating: number
-  provisional: boolean
   following: boolean
   presence: { userId: string; status: PresenceStatus; lastSeenAt: string | null } | null
   suspended: boolean

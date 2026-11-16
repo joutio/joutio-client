@@ -92,6 +92,48 @@ export interface WizzState {
   cooldownEndsAt: number | null
 }
 
+/**
+ * Salle où l'adversaire **attend le viewer** (2026-11-16) : salle humaine en attente, adversaire présent, viewer
+ * absent. Le viewer est l'initiateur quand `canCancel` est vrai, l'invité sinon. Sert la pastille de l'onglet Défis.
+ */
+export function isWaitingForViewer(room: RoomView): boolean {
+  if (room.vsBot || room.status !== 'WAITING_PLAYERS') return false
+  const viewerPresent = room.canCancel ? room.initiatorPresent : room.participantPresent
+  const opponentPresent = room.canCancel ? room.participantPresent : room.initiatorPresent
+  return opponentPresent && !viewerPresent
+}
+
+/** Nombre de salles où l'adversaire attend le viewer (`isWaitingForViewer`). */
+export function roomsWaitingForViewer(rooms: readonly RoomView[] | undefined): number {
+  return rooms?.filter(isWaitingForViewer).length ?? 0
+}
+
+/**
+ * Présence d'un joueur dans un salon, poussée sur le flux personnel de l'autre joueur (`ROOM_PRESENCE`, éphémère,
+ * hors inbox) : le client relit ses salons.
+ */
+export interface RoomPresence {
+  roomId: string
+  playerId: string
+  present: boolean
+  at: string
+}
+
+/**
+ * Applique une présence poussée (`ROOM_PRESENCE`) aux salles du viewer, sans attendre la projection serveur.
+ * `undefined` quand la salle n'est pas connue : l'appelant relit alors ses salles.
+ */
+export function applyRoomPresence(rooms: readonly RoomView[], presence: RoomPresence, viewerId: string): RoomView[] | undefined {
+  if (!rooms.some((room) => room.roomId === presence.roomId)) return undefined
+  return rooms.map((room) => {
+    if (room.roomId !== presence.roomId) return room
+    // `canCancel` : le viewer est l'initiateur. Le joueur concerné est l'initiateur s'il est le viewer initiateur, ou
+    // l'adversaire d'un viewer invité.
+    const playerIsInitiator = (presence.playerId === viewerId) === room.canCancel
+    return playerIsInitiator ? { ...room, initiatorPresent: presence.present } : { ...room, participantPresent: presence.present }
+  })
+}
+
 export function emptyRoom(roomId: string): Room {
   return {
     roomId,
