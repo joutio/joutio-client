@@ -1428,6 +1428,7 @@ export const fr = {
   'mobile.ds.detentHalf': "À moitié",
   'mobile.ds.detentFull': "Plein écran",
   'mobile.ds.detentHeight': "Hauteur de « {label} »",
+  'mobile.ds.keyboardDone': "OK",
   'mobile.ds.mainNav': "Navigation principale",
   'mobile.ds.allSeen': "Tu as tout vu",
   'mobile.ds.loadingMore': "Chargement de la suite",

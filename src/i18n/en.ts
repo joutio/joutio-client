@@ -1429,6 +1429,7 @@ export const en: Messages = {
   'mobile.ds.detentHalf': "Half",
   'mobile.ds.detentFull': "Full screen",
   'mobile.ds.detentHeight': "Height of “{label}”",
+  'mobile.ds.keyboardDone': "Done",
   'mobile.ds.mainNav': "Main navigation",
   'mobile.ds.allSeen': "You've seen everything",
   'mobile.ds.loadingMore': "Loading more",
