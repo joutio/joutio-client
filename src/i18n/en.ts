@@ -1556,4 +1556,11 @@ export const en: Messages = {
   'ds.unlocks': 'Unlocks',
   'ds.carousel': 'carousel',
   'ds.slide': 'slide',
+  'ds.reviewA11y': "Question {n}: your answer, {me}; opponent, {opponent}; {points} points",
+  'ds.masteryPendingA11y': "{tier} mastery, experience points being calculated",
+  'ds.masteryA11y': "{tier} mastery, {gained} experience points gained, {rest}",
+  'ds.remainingBefore': "{remaining} before {next}",
+  'ds.maxTierLower': "max tier",
+  'ds.masteryOf': "Mastery · {topic}",
+  'ds.slideOf': "{index} of {count}",
 }

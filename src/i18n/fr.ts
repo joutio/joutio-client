@@ -1555,6 +1555,13 @@ export const fr = {
   'ds.unlocks': 'Déblocages',
   'ds.carousel': 'carrousel',
   'ds.slide': 'diapositive',
+  'ds.reviewA11y': "Question {n} : ta réponse, {me} ; adversaire, {opponent} ; {points} points",
+  'ds.masteryPendingA11y': "Maîtrise {tier}, points d'expérience en cours de calcul",
+  'ds.masteryA11y': "Maîtrise {tier}, {gained} points d'expérience gagnés, {rest}",
+  'ds.remainingBefore': "{remaining} avant {next}",
+  'ds.maxTierLower': "palier max",
+  'ds.masteryOf': "Maîtrise · {topic}",
+  'ds.slideOf': "{index} sur {count}",
 }
 
 export type Messages = Record<keyof typeof fr, string>
