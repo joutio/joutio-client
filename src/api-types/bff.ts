@@ -1,4 +1,4 @@
-/** Contrats de la surface BFF (`services/joutio-bff/AGENTS.md` § 3), limités à ce que l'app consomme. */
+/** Contrats de la surface BFF (`docs/api/`), limités à ce que l'app consomme. */
 
 export type Language = 'fr' | 'en'
 export type TopicNames = Record<string, string>

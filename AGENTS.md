@@ -1,47 +1,44 @@
 # AGENTS.md — joutio-client
 
-> Domaine client **partagé** de Joutio : TypeScript pur, consommé par `joutio-web` et `joutio-mobile`.
-> Décision : ADR [`design/specs/decisions/0001-client-domain.md`](../../design/specs/decisions/0001-client-domain.md),
-> lancé le 2026-11-11 (D17, [`design/specs/web-kit.md`](../../design/specs/web-kit.md) § 2).
+`@joutio/client` : **domaine client partagé** de Joutio, en TypeScript pur, consommé par
+`joutio-web` et `joutio-mobile`. Ce que les deux apps calculaient chacune de leur côté, écrit une
+seule fois et testé. Décisions : ADR [0001](../../design/specs/decisions/0001-client-domain.md)
+(domaine), [0002](../../design/specs/decisions/0002-client-i18n.md) (textes).
 
----
+Lire : `../../AGENTS.md`, puis [`docs/frontend/architecture.md`](../../docs/frontend/architecture.md)
+et le contrat du BFF ([`docs/api/`](../../docs/api/README.md)).
 
-## 1. Rôle
+## Modules
 
-Ce que les deux apps calculaient chacune de leur côté, une seule fois et testé :
+| `@joutio/client/<module>` | Contenu |
+|---|---|
+| `game` | constantes du duel, read model `GameState`, repli des notifications, chronologie de l'arène (`sceneAt`), DTOs de résultat |
+| `rooms` | salles (`Room`, repli, étapes de préparation, cadence des relances) et appariement (`Matchmaking`) |
+| `authoring` | atelier : rôles, actions sur une question, brouillons, plan de modifications, signalements, plafonds, titres par palier |
+| `premium` | limites du plan (`planLimits`), sujets gelés (`isFrozen`), problèmes de limite (`QUOTA_PROBLEMS`), accroches |
+| `profile` | règles du pseudonyme (miroir de `joutio-profile`) et de la date de naissance, 15 ans minimum (miroir de `joutio-identity`) |
+| `geo` | pays ISO 3166-1 alpha-2 : liste, noms FR/EN embarqués, tri, recherche sans accents, drapeaux |
+| `share` | liens universels `go.joutio.com` : construction et analyse |
+| `i18n` | textes FR/EN des deux apps (`fr.ts` fait foi, `en.ts` typé), `translate`, `formatNumber`, `formatDate`, `dayLabel`, `pluralOf`, `tierKey`, `categoryKey`. Préfixes : aucun (commun), `mobile.`, `ds.` |
+| `api-types` | DTOs du BFF (`*View`, `*Request`) et erreur RFC 7807 (`ApiError`) |
 
-| Module (`@joutio/client/<module>`) | Contenu |
-|:-:|---|
-| `game` | constantes du duel, read model `GameState`, fold des notifications, chronologie de l'arène (`sceneAt`), DTOs de résultat |
-| `rooms` | salles (`Room`, fold, étapes de préparation, cadence des relances) et matchmaking (`Matchmaking`, fold) |
-| `authoring` | atelier : rôles, actions sur une question, brouillons, plan de modifications, signalements, plafonds |
-| `premium` | limites du plan (`planLimits`, repli sur les défauts), sujets gelés (`isFrozen`), problèmes de limite (`QUOTA_PROBLEMS`), accroches de la feuille Premium |
-| `profile` | règles du pseudonyme (caractères, longueur, clé d'unicité), miroir de `joutio-profile` ; date de naissance (âge, 15 ans minimum), miroir de `joutio-identity` |
-| `geo` | pays ISO 3166-1 alpha-2 : liste, noms FR/EN embarqués (Hermes), tri, recherche sans accents, suggestions, drapeaux |
-| `share` | liens universels `go.joutio.com` (construction, analyse, anciens liens de salon) |
-| `i18n` | textes FR/EN des deux apps (`fr.ts` fait foi, `en.ts` typé), `translate`, formats localisés (`formatNumber`, `formatDate`, `dayLabel`, `pluralOf`), `tierKey`/`categoryKey` — ADR [`0002`](../../design/specs/decisions/0002-client-i18n.md). Préfixes : aucun (commun), `mobile.`, `ds.` |
-| `api-types` | DTOs de façade du BFF (`*View`, `*Request`) et erreur RFC 7807 (`ApiError`) |
+L'entrée racine réexporte tout, sauf `i18n` (sous-chemin `@joutio/client/i18n` seulement).
 
-L'entrée racine `@joutio/client` réexporte tout, sauf `i18n` (sous-chemin `@joutio/client/i18n` seulement).
+## Règles
 
-Origine : `joutio-mobile` (`features/{duel,play,authoring}/domain/`, `shared/types/{bff,api}.ts`), extrait le 2026-11-11.
-
----
-
-## 2. Règles (ADR 0001)
-
-- **Aucun framework ni plateforme** : pas de `react`, `react-native`, `expo`, `vite`, `next` ; pas de `window`,
-  `document`, `fetch`, `localStorage`, `navigator`, `WebSocket`. ESLint l'interdit (`eslint.config.js`).
-- `lib: ["ES2023"]`, sans DOM ; tests Vitest en environnement `node`.
-- Fonctions pures et types. Pas d'I/O, pas d'horloge implicite : l'instant courant est un paramètre (`now`).
+- **Aucun framework ni plateforme** : pas de `react`, `react-native`, `expo`, `vite` ; pas de
+  `window`, `document`, `fetch`, `localStorage`, `navigator`, `WebSocket`. ESLint l'interdit.
+  `lib: ["ES2023"]` sans DOM ; tests Vitest en environnement `node`.
+- Fonctions pures et types. Pas d'I/O ni d'horloge implicite : l'instant courant est un paramètre
+  (`now`).
 - Le serveur reste autoritaire (score, Elo, XP) : le client projette et affiche.
-- Codes sémantiques (`OR`, `SCIENCE`) ; jamais de couleur ni de valeur de design (elles sont dans les tokens du lab).
-- Imports relatifs avec l'extension `.js` (résolution `NodeNext`) : le paquet se charge dans Node comme dans un bundler.
-- Un contrat du BFF qui change se reporte ici **avant** les apps, puis les apps montent de version.
+- Des codes sémantiques (`OR`, `SCIENCE`), jamais une couleur ou une valeur de design (elles
+  vivent dans les jetons du lab).
+- Imports relatifs avec l'extension `.js` (résolution `NodeNext`).
+- Un contrat du BFF qui change est reporté **ici d'abord**, puis les apps montent de version.
+- Une règle métier dupliquée d'un service (pseudonyme, âge) suit le service à chaque évolution.
 
----
-
-## 3. Commandes
+## Commandes
 
 ```bash
 npm install
@@ -51,14 +48,12 @@ npm test
 npm run build      # dist/ : ESM + .d.ts
 ```
 
----
+## Publication
 
-## 4. Publication
-
-- **semantic-release** à chaque push sur `main` (hors `*.md`), config `release.config.cjs` : profil npm partagé, avec
-  publication sur **GitHub Packages** (`publishConfig.registry`). Commits conventionnels : `feat` → mineure,
-  `fix`/`perf` → correctif, `!` → majeure. **Ne jamais changer la version à la main.**
-- Jeton : `JOUTIO_GITHUB_TOKEN` s'il existe, sinon le `GITHUB_TOKEN` du workflow (`packages: write`).
-- Les apps pinnent une version release. Installation : `.npmrc` avec `@joutio:registry=https://npm.pkg.github.com`
-  et un jeton qui lit les paquets (`read:packages`), en local (`~/.npmrc`) comme en CI (`NODE_AUTH_TOKEN`).
-- Commits sans ligne de co-auteur.
+- semantic-release à chaque push sur `main` (hors `*.md`), publication sur GitHub Packages. Ne
+  jamais changer la version à la main.
+- Jeton : `JOUTIO_GITHUB_TOKEN`, sinon le `GITHUB_TOKEN` du workflow (`packages: write`).
+- Les apps pinnent une version publiée. Installation : `.npmrc` avec
+  `@joutio:registry=https://npm.pkg.github.com` et un jeton `read:packages` (`~/.npmrc` via
+  `make bootstrap`, `NODE_AUTH_TOKEN` en CI).
+- **Commits sans ligne de co-auteur** dans ce dépôt.
