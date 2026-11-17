@@ -1,3 +1,9 @@
+## [6.2.0](https://github.com/joutio/joutio-client/compare/v6.1.0...v6.2.0) (2026-11-17)
+
+### Features
+
+* **i18n:** avatar editor dictionary in French and English ([baf952f](https://github.com/joutio/joutio-client/commit/baf952fc5630ddbfe335593f230434104c914195))
+
 ## [6.1.0](https://github.com/joutio/joutio-client/compare/v6.0.0...v6.1.0) (2026-11-17)
 
 ### Features
