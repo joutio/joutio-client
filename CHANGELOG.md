@@ -1,3 +1,13 @@
+## [6.0.0](https://github.com/joutio/joutio-client/compare/v5.1.0...v6.0.0) (2026-11-17)
+
+### ⚠ BREAKING CHANGES
+
+* **i18n:** mobile.ds.* keys renamed to ds.*, mobile.profile.locked to common.locked.
+
+### Features
+
+* **i18n:** design system labels under ds.*, web frame and store texts ([aeee372](https://github.com/joutio/joutio-client/commit/aeee37270e322dc8a4b95c5625a23a2cc015213a))
+
 ## [5.1.0](https://github.com/joutio/joutio-client/compare/v5.0.0...v5.1.0) (2026-11-16)
 
 ### Features
