@@ -53,8 +53,14 @@ export const serverTimeQuery = (http: HttpClient) => read(queryKeys.serverTime()
 export const homeQuery = (http: HttpClient) => read(queryKeys.home(), () => http.get<HomeView>('/api/home'))
 export const topicOverviewQuery = (http: HttpClient, topicId: string) =>
   read(queryKeys.topic.overview(topicId), () => http.get<TopicOverviewView>(`/api/topics/${segment(topicId)}/overview`))
+/** Classement montré sur la fiche d'un sujet : depuis toujours, monde entier, les dix premiers. */
+export const TOPIC_BOARD = { period: 'ALL_TIME', scope: 'WORLD', size: 10 } as const
 export const topicLeaderboardQuery = (http: HttpClient, topicId: string) =>
-  read(queryKeys.topic.leaderboard(topicId), () => http.get<TopicLeaderboardView>(`/api/topics/${segment(topicId)}/leaderboard`))
+  read(queryKeys.topic.leaderboard(topicId), () =>
+    http.get<TopicLeaderboardView>(`/api/topics/${segment(topicId)}/leaderboard`, {
+      query: { period: TOPIC_BOARD.period, scope: TOPIC_BOARD.scope, page: 0, size: TOPIC_BOARD.size },
+    }),
+  )
 
 // Joueurs
 export const profileQuery = (http: HttpClient, userId: string) =>
