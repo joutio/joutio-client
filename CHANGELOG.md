@@ -1,3 +1,9 @@
+## [6.1.0](https://github.com/joutio/joutio-client/compare/v6.0.0...v6.1.0) (2026-11-17)
+
+### Features
+
+* **i18n:** mastery, round review and slide accessibility labels ([ffbc2dd](https://github.com/joutio/joutio-client/commit/ffbc2dd089c1a0776a3d0319bed772db092fbfac))
+
 ## [6.0.0](https://github.com/joutio/joutio-client/compare/v5.1.0...v6.0.0) (2026-11-17)
 
 ### ⚠ BREAKING CHANGES
