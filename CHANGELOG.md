@@ -1,3 +1,13 @@
+## [7.0.0](https://github.com/joutio/joutio-client/compare/v6.2.0...v7.0.0) (2026-11-17)
+
+### ⚠ BREAKING CHANGES
+
+* **forms:** mobile.auth.invalidEmail is renamed form.invalidEmail.
+
+### Features
+
+* **forms:** shared Zod form schemas and input limits ([160b718](https://github.com/joutio/joutio-client/commit/160b71893fd10012605a4f643837592eda7cecca))
+
 ## [6.2.0](https://github.com/joutio/joutio-client/compare/v6.1.0...v6.2.0) (2026-11-17)
 
 ### Features
