@@ -1,3 +1,13 @@
+## [8.0.0](https://github.com/joutio/joutio-client/compare/v7.0.1...v8.0.0) (2026-11-17)
+
+### ⚠ BREAKING CHANGES
+
+* **forms:** questionDraftSchema(imageChanged) becomes questionDraftSchema(savedImageUrl?).
+
+### Features
+
+* **forms:** questionDraftSchema takes the saved image URL ([62334e0](https://github.com/joutio/joutio-client/commit/62334e0131421d937f9e385b06c386d3d355d205))
+
 ## [7.0.1](https://github.com/joutio/joutio-client/compare/v7.0.0...v7.0.1) (2026-11-17)
 
 ### Bug Fixes
