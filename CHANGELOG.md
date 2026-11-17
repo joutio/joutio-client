@@ -1,3 +1,9 @@
+## [8.2.1](https://github.com/joutio/joutio-client/compare/v8.2.0...v8.2.1) (2026-11-17)
+
+### Bug Fixes
+
+* **query:** topic leaderboard read sends the sheet's period, scope and size ([5926ac7](https://github.com/joutio/joutio-client/commit/5926ac7e56c68b8b758727872c460bc7f1de3878))
+
 ## [8.2.0](https://github.com/joutio/joutio-client/compare/v8.1.1...v8.2.0) (2026-11-17)
 
 ### Features
