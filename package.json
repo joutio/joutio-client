@@ -20,51 +20,63 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./game": {
       "types": "./dist/game/index.d.ts",
-      "import": "./dist/game/index.js"
+      "import": "./dist/game/index.js",
+      "default": "./dist/game/index.js"
     },
     "./rooms": {
       "types": "./dist/rooms/index.d.ts",
-      "import": "./dist/rooms/index.js"
+      "import": "./dist/rooms/index.js",
+      "default": "./dist/rooms/index.js"
     },
     "./authoring": {
       "types": "./dist/authoring/index.d.ts",
-      "import": "./dist/authoring/index.js"
+      "import": "./dist/authoring/index.js",
+      "default": "./dist/authoring/index.js"
     },
     "./profile": {
       "types": "./dist/profile/index.d.ts",
-      "import": "./dist/profile/index.js"
+      "import": "./dist/profile/index.js",
+      "default": "./dist/profile/index.js"
     },
     "./premium": {
       "types": "./dist/premium/index.d.ts",
-      "import": "./dist/premium/index.js"
+      "import": "./dist/premium/index.js",
+      "default": "./dist/premium/index.js"
     },
     "./api-types": {
       "types": "./dist/api-types/index.d.ts",
-      "import": "./dist/api-types/index.js"
+      "import": "./dist/api-types/index.js",
+      "default": "./dist/api-types/index.js"
     },
     "./geo": {
       "types": "./dist/geo/index.d.ts",
-      "import": "./dist/geo/index.js"
+      "import": "./dist/geo/index.js",
+      "default": "./dist/geo/index.js"
     },
     "./share": {
       "types": "./dist/share/index.d.ts",
-      "import": "./dist/share/index.js"
+      "import": "./dist/share/index.js",
+      "default": "./dist/share/index.js"
     },
     "./i18n": {
       "types": "./dist/i18n/index.d.ts",
-      "import": "./dist/i18n/index.js"
+      "import": "./dist/i18n/index.js",
+      "default": "./dist/i18n/index.js"
     },
     "./forms": {
       "types": "./dist/forms/index.d.ts",
-      "import": "./dist/forms/index.js"
+      "import": "./dist/forms/index.js",
+      "default": "./dist/forms/index.js"
     },
     "./query": {
       "types": "./dist/query/index.d.ts",
-      "import": "./dist/query/index.js"
+      "import": "./dist/query/index.js",
+      "default": "./dist/query/index.js"
     }
   },
   "scripts": {
