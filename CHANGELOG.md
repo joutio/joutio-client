@@ -1,3 +1,9 @@
+## [7.0.1](https://github.com/joutio/joutio-client/compare/v7.0.0...v7.0.1) (2026-11-17)
+
+### Bug Fixes
+
+* **forms:** content notice category typed, good faith as a boolean ([256c53f](https://github.com/joutio/joutio-client/commit/256c53fabb4a605f856969bd47cfd2791a6932fe))
+
 ## [7.0.0](https://github.com/joutio/joutio-client/compare/v6.2.0...v7.0.0) (2026-11-17)
 
 ### ⚠ BREAKING CHANGES
