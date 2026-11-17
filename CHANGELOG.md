@@ -1,3 +1,9 @@
+## [8.2.2](https://github.com/joutio/joutio-client/compare/v8.2.1...v8.2.2) (2026-11-17)
+
+### Bug Fixes
+
+* **i18n:** training notice states no Elo gain, drop result.trainingElo ([305715a](https://github.com/joutio/joutio-client/commit/305715ae17be9954692b35e771584f6f66d8934a))
+
 ## [8.2.1](https://github.com/joutio/joutio-client/compare/v8.2.0...v8.2.1) (2026-11-17)
 
 ### Bug Fixes
