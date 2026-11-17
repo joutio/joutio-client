@@ -1135,7 +1135,7 @@ export const fr = {
   'tooYoung.text': "Une erreur de saisie ? Écris au support.",
   'tooYoung.support': "Contacter le support",
   'mobile.suspension.permanent': "Ta suspension est définitive.",
-  'mobile.auth.invalidEmail': "Adresse e-mail invalide.",
+  'form.invalidEmail': "Adresse e-mail invalide.",
   'mobile.auth.code.validity': ". Il reste valable 10 minutes.",
   'mobile.auth.incomplete': "Réponse d'authentification incomplète. Réessaie.",
   'mobile.auth.google.failedRetry': "Connexion Google impossible. Réessaie.",
@@ -1562,6 +1562,12 @@ export const fr = {
   'ds.maxTierLower': "palier max",
   'ds.masteryOf': "Maîtrise · {topic}",
   'ds.slideOf': "{index} sur {count}",
+  'form.required': "Champ requis.",
+  'form.tooLong': "Texte trop long.",
+  'form.tooShort': "Texte trop court.",
+  'form.otpIncomplete': "Saisis les 6 chiffres du code.",
+  'form.questionIncomplete': "Complète la question avant de l'enregistrer.",
+  'form.reasonRequired': "Choisis au moins un motif.",
 }
 
 export type Messages = Record<keyof typeof fr, string>

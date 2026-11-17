@@ -57,6 +57,10 @@
     "./i18n": {
       "types": "./dist/i18n/index.d.ts",
       "import": "./dist/i18n/index.js"
+    },
+    "./forms": {
+      "types": "./dist/forms/index.d.ts",
+      "import": "./dist/forms/index.js"
     }
   },
   "scripts": {
@@ -71,6 +75,10 @@
     "eslint": "^10",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8",
-    "vitest": "^5.0.5"
+    "vitest": "^5.0.5",
+    "zod": "^4.6.7"
+  },
+  "peerDependencies": {
+    "zod": "^4.6.7"
   }
 }
