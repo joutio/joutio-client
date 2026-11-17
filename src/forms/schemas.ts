@@ -81,9 +81,15 @@ export const topicTitlesSchema = z.record(z.string(), z.record(z.string(), z.str
   if (tooLong) context.addIssue({ code: 'custom', message: 'form.tooLong', path: [tooLong.language, tooLong.tier] })
 })
 
-/** Question de l'atelier, prête à l'envoi : `isReady` de `authoring/question-draft` (image choisie ici ou non). */
-export const questionDraftSchema = (imageChanged: boolean) =>
-  z.custom<QuestionDraft>((draft) => isReady(draft as QuestionDraft, imageChanged), key('form.questionIncomplete'))
+/**
+ * Question de l'atelier, prête à l'envoi : `isReady` de `authoring/question-draft`. L'image est « choisie dans cet
+ * éditeur » quand son URL diffère de celle enregistrée (`savedImageUrl`, absente pour une nouvelle question).
+ */
+export const questionDraftSchema = (savedImageUrl?: string) =>
+  z.custom<QuestionDraft>((value) => {
+    const draft = value as QuestionDraft
+    return isReady(draft, draft.imageUrl !== savedImageUrl)
+  }, key('form.questionIncomplete'))
 
 /** Refus motivé d'une question en modération. */
 export const rejectQuestionSchema = z.object({ reason: required(MAX_REJECT) })

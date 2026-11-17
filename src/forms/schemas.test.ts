@@ -50,9 +50,13 @@ describe('form schemas', () => {
   })
 
   it('accepts a question only when ready', () => {
-    expect(messages(questionDraftSchema(false).safeParse(emptyDraft()))).toEqual(['form.questionIncomplete'])
+    expect(messages(questionDraftSchema().safeParse(emptyDraft()))).toEqual(['form.questionIncomplete'])
     const ready = { ...emptyDraft(), texts: { fr: 'Capitale de la France ?', en: '' }, answers: { fr: ['Paris', 'Lyon', 'Nice', 'Lille'], en: ['', '', '', ''] }, correct: 0 }
-    expect(questionDraftSchema(false).safeParse(ready).success).toBe(true)
+    expect(questionDraftSchema().safeParse(ready).success).toBe(true)
+    // Image choisie ici : sa description est exigée ; l'image déjà enregistrée n'en a pas besoin.
+    const withImage = { ...ready, imageUrl: 'https://media/new.jpg' }
+    expect(questionDraftSchema().safeParse(withImage).success).toBe(false)
+    expect(questionDraftSchema('https://media/new.jpg').safeParse(withImage).success).toBe(true)
   })
 
   it('needs a report reason, and a motivated, good-faith content notice', () => {
