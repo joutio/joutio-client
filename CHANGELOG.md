@@ -1,3 +1,9 @@
+## [8.2.0](https://github.com/joutio/joutio-client/compare/v8.1.1...v8.2.0) (2026-11-17)
+
+### Features
+
+* **query:** HttpClient interface and shared BFF read factories ([8a2b036](https://github.com/joutio/joutio-client/commit/8a2b036fd329adb1c3c3517d3fddb084a119218e))
+
 ## [8.1.1](https://github.com/joutio/joutio-client/compare/v8.1.0...v8.1.1) (2026-11-17)
 
 ### Bug Fixes
