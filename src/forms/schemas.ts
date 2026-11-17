@@ -1,5 +1,11 @@
 import { z } from 'zod'
-import { CONTENT_NOTICE_CATEGORIES, CONTENT_NOTICE_MIN_DESCRIPTION, type QuestionReportReason, type UserReportReason } from '../api-types/bff.js'
+import {
+  CONTENT_NOTICE_CATEGORIES,
+  CONTENT_NOTICE_MIN_DESCRIPTION,
+  type ContentNoticeCategory,
+  type QuestionReportReason,
+  type UserReportReason,
+} from '../api-types/bff.js'
 import { MAX_DESCRIPTION } from '../authoring/description.js'
 import { MAX_NAME, MAX_REJECT } from '../authoring/limits.js'
 import { isReady, type QuestionDraft } from '../authoring/question-draft.js'
@@ -92,7 +98,7 @@ export const questionReportSchema = z.object({ reasons: reasons<QuestionReportRe
 
 /** Signalement de contenu illicite (sujet) : catégorie, description motivée, déclaration de bonne foi. */
 export const contentNoticeSchema = z.object({
-  category: z.enum(CONTENT_NOTICE_CATEGORIES as [string, ...string[]], key('form.required')),
+  category: z.custom<ContentNoticeCategory>((value) => CONTENT_NOTICE_CATEGORIES.includes(value as ContentNoticeCategory), key('form.required')),
   description: text(MAX_NOTICE_DESCRIPTION).min(CONTENT_NOTICE_MIN_DESCRIPTION, key('form.tooShort')),
-  goodFaith: z.literal(true, key('form.required')),
+  goodFaith: z.boolean().refine((value) => value, key('form.required')),
 })
