@@ -1,3 +1,9 @@
+## [8.1.1](https://github.com/joutio/joutio-client/compare/v8.1.0...v8.1.1) (2026-11-17)
+
+### Bug Fixes
+
+* **build:** default export condition on every entry point ([47a73d7](https://github.com/joutio/joutio-client/commit/47a73d7d7460411f1167f2325e4d4123bdff2ac5))
+
 ## [8.1.0](https://github.com/joutio/joutio-client/compare/v8.0.0...v8.1.0) (2026-11-17)
 
 ### Features
