@@ -19,7 +19,7 @@ et le contrat du BFF ([`docs/api/`](../../docs/api/README.md)).
 | `profile` | règles du pseudonyme (miroir de `joutio-profile`) et de la date de naissance, 15 ans minimum (miroir de `joutio-identity`) |
 | `geo` | pays ISO 3166-1 alpha-2 : liste, noms FR/EN embarqués, tri, recherche sans accents, drapeaux |
 | `share` | liens universels `go.joutio.com` : construction et analyse |
-| `query` | clés React Query hiérarchiques (`queryKeys`), transaction optimiste (`optimisticUpdate`, retour arrière ciblé), mises à jour de cache pures (`applyFollow`). `@tanstack/query-core` en dépendance pair, aucun hook |
+| `query` | clés React Query hiérarchiques (`queryKeys`), lectures communes du BFF (`meQuery`, `profileQuery`… : clé + `queryFn` sur un `HttpClient` injecté), transaction optimiste (`optimisticUpdate`, retour arrière ciblé), mises à jour de cache pures (`applyFollow`). `@tanstack/query-core` en dépendance pair, aucun hook |
 | `forms` | schémas Zod des formulaires des deux apps (connexion, code, date de naissance, profil, sujet, titres, question, modération, signalements), limites de saisie ; messages = clés `i18n`. `zod` en dépendance pair |
 | `i18n` | textes FR/EN des deux apps (`fr.ts` fait foi, `en.ts` typé), `translate`, `formatNumber`, `formatDate`, `dayLabel`, `pluralOf`, `tierKey`, `categoryKey`, `avatarLabel` (dictionnaire de l'éditeur d'avatar, `avatar/`). Préfixes : aucun (commun), `mobile.`, `ds.` |
 | `api-types` | DTOs du BFF (`*View`, `*Request`) et erreur RFC 7807 (`ApiError`) |
