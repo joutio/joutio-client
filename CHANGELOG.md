@@ -1,3 +1,9 @@
+## [8.1.0](https://github.com/joutio/joutio-client/compare/v8.0.0...v8.1.0) (2026-11-17)
+
+### Features
+
+* **query:** shared query keys, optimistic transaction and contacts cache update ([ea8941e](https://github.com/joutio/joutio-client/commit/ea8941e2088ba26337bb9463c892bb5de094446a))
+
 ## [8.0.0](https://github.com/joutio/joutio-client/compare/v7.0.1...v8.0.0) (2026-11-17)
 
 ### ⚠ BREAKING CHANGES
