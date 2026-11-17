@@ -61,6 +61,10 @@
     "./forms": {
       "types": "./dist/forms/index.d.ts",
       "import": "./dist/forms/index.js"
+    },
+    "./query": {
+      "types": "./dist/query/index.d.ts",
+      "import": "./dist/query/index.js"
     }
   },
   "scripts": {
@@ -72,6 +76,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10",
+    "@tanstack/query-core": "^5.108.0",
     "eslint": "^10",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8",
@@ -79,6 +84,7 @@
     "zod": "^4.6.7"
   },
   "peerDependencies": {
+    "@tanstack/query-core": "^5.90.5",
     "zod": "^4.6.7"
   }
 }
