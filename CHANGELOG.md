@@ -1,3 +1,9 @@
+## [8.5.0](https://github.com/joutio/joutio-client/compare/v8.4.0...v8.5.0) (2026-11-19)
+
+### Features
+
+* **i18n:** share text for a badge unlocked in the result ([f9138f3](https://github.com/joutio/joutio-client/commit/f9138f32a75abd16835a985f76d83e9283aafced))
+
 ## [8.4.0](https://github.com/joutio/joutio-client/compare/v8.3.0...v8.4.0) (2026-11-19)
 
 ### Features
