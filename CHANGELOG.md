@@ -1,3 +1,9 @@
+## [8.4.0](https://github.com/joutio/joutio-client/compare/v8.3.0...v8.4.0) (2026-11-19)
+
+### Features
+
+* **question:** image description and game badges in the client contract ([fe0a16b](https://github.com/joutio/joutio-client/commit/fe0a16bb73a3402d4bd5ba05b376a52319878468))
+
 ## [8.3.0](https://github.com/joutio/joutio-client/compare/v8.2.2...v8.3.0) (2026-11-19)
 
 ### Features
