@@ -429,7 +429,8 @@ export interface RewardsView {
   }[]
 }
 
-export type NotificationCategory = 'FOLLOW' | 'ROOM' | 'QUESTION'
+/** `REMATCH` : défi reçu depuis le résultat d'une partie ; `ACCOUNT` : obligatoire, jamais réglable. */
+export type NotificationCategory = 'FOLLOW' | 'ROOM' | 'REMATCH' | 'QUESTION' | 'ACCOUNT'
 
 /** `GET /api/notification-preferences`. */
 export interface NotificationPreferenceView {
