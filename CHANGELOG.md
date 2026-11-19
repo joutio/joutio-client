@@ -1,3 +1,9 @@
+## [8.7.0](https://github.com/joutio/joutio-client/compare/v8.6.0...v8.7.0) (2026-11-19)
+
+### Features
+
+* **i18n:** server notification categories for rematches, followers and reports ([c950b0f](https://github.com/joutio/joutio-client/commit/c950b0fd0fb3c59edc38ae445e6b066f9b9110d9))
+
 ## [8.6.0](https://github.com/joutio/joutio-client/compare/v8.5.0...v8.6.0) (2026-11-19)
 
 ### Features
