@@ -1,3 +1,9 @@
+## [8.3.0](https://github.com/joutio/joutio-client/compare/v8.2.2...v8.3.0) (2026-11-19)
+
+### Features
+
+* **api-types:** autoTrainOnTimeout is always present in MeView ([3d34717](https://github.com/joutio/joutio-client/commit/3d34717a3a4c0cd63b459e6b84f6bec227d95a84))
+
 ## [8.2.2](https://github.com/joutio/joutio-client/compare/v8.2.1...v8.2.2) (2026-11-17)
 
 ### Bug Fixes
