@@ -1,3 +1,9 @@
+## [8.6.0](https://github.com/joutio/joutio-client/compare/v8.5.0...v8.6.0) (2026-11-19)
+
+### Features
+
+* **game:** NTP-like server clock ([37cbfa3](https://github.com/joutio/joutio-client/commit/37cbfa3c3524bc67494237df2eae3a143f3310e3))
+
 ## [8.5.0](https://github.com/joutio/joutio-client/compare/v8.4.0...v8.5.0) (2026-11-19)
 
 ### Features
