@@ -328,6 +328,7 @@ export const en: Messages = {
   'result.shareStreak': "{days}-day streak on Joutio!",
   'result.streakMicah': "unlocks Micah.",
   'result.shareTitle': "New title on Joutio: {topic}",
+  'result.shareBadge': "New badge on Joutio: {badge}",
   'result.rankText': "Your frame changes on your profile and in duels.",
   'result.rankNext': "at {elo}.",
   'result.titleText': "Wear it: it shows under your name, on your profile and in duels.",

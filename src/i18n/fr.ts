@@ -327,6 +327,7 @@ export const fr = {
   'result.shareStreak': "{days} jours de série sur Joutio !",
   'result.streakMicah': "débloque Micah.",
   'result.shareTitle': "Nouveau titre sur Joutio : {topic}",
+  'result.shareBadge': "Nouveau badge sur Joutio : {badge}",
   'result.rankText': "Ton cadre change sur ton profil et en duel.",
   'result.rankNext': "à {elo}.",
   'result.titleText': "Porte-le : il s'affiche sous ton nom, sur ton profil et en duel.",
