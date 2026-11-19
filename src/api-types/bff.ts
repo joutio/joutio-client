@@ -35,11 +35,8 @@ export interface MeView {
   limits?: PlanLimitsView | null
   progression: ProgressionView | null
   stats: DuelStatsView | null
-  /**
-   * Recherche expirée sans adversaire : entraînement automatique contre le bot. Absent tant que le BFF n'expose pas
-   * encore le champ : `true` par défaut.
-   */
-  autoTrainOnTimeout?: boolean
+  /** Recherche expirée sans adversaire : entraînement automatique contre le bot (préférence du profil). */
+  autoTrainOnTimeout: boolean
   /** Date de naissance privée (`AAAA-MM-JJ`), `null` si non renseignée. Absent avant BFF 2.3. */
   birthDate?: string | null
   /** Vrai si la date de naissance doit être demandée avant de jouer (compte récent sans date). Absent : `false`. */
