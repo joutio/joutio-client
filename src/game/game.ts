@@ -36,6 +36,7 @@ export interface GameRoundState {
   questionId: string | null
   questionText: string
   imageUrl: string | null
+  imageAlt: string | null
   difficulty: string | null
   answers: Record<string, string>
   translations: Record<string, RoundQuestionTranslation>
@@ -52,17 +53,18 @@ export interface GameRoundState {
 }
 
 /**
- * Résout le texte et les réponses dans la langue du joueur, avec repli sur la langue source
- * (langue absente du snapshot ou ancienne partie sans traductions).
+ * Résout le texte, les réponses et la description de l'image dans la langue du joueur, avec repli sur la langue
+ * source (langue absente du snapshot ou ancienne partie sans traductions). `imageAlt` vide : image décorative.
  */
-export function localizedQuestion(round: GameRoundState | null | undefined, language: string): { questionText: string; answers: Record<string, string> } {
+export function localizedQuestion(round: GameRoundState | null | undefined, language: string): { questionText: string; answers: Record<string, string>; imageAlt: string } {
   if (!round) {
-    return { questionText: '', answers: {} }
+    return { questionText: '', answers: {}, imageAlt: '' }
   }
   const translation = round.translations[language]
   return {
     questionText: translation?.text ?? round.questionText,
     answers: translation?.answers ?? round.answers,
+    imageAlt: translation?.imageAlt ?? round.imageAlt ?? '',
   }
 }
 

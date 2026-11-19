@@ -37,6 +37,8 @@ export interface GameStartedNotification {
 export interface RoundQuestionTranslation {
   text: string
   answers: Record<string, string>
+  /** Description de l'image dans cette langue (lecteurs d'écran), `null` si absente. */
+  imageAlt?: string | null
 }
 
 export interface RoundStartedNotification {
@@ -46,6 +48,8 @@ export interface RoundStartedNotification {
   questionId: string
   questionText: string
   imageUrl: string | null
+  /** Description de l'image (repli FR, comme `questionText`), `null` si absente. */
+  imageAlt?: string | null
   difficulty: string | null
   answers: Record<string, string>
   /** Contenus localisés (clé = code ISO 639-1 : fr, en). Absent sur les anciennes parties. */

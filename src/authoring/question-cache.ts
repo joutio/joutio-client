@@ -30,7 +30,7 @@ export function applyQuestionOperations(
           ...question,
           contents: [
             ...question.contents.filter((content) => content.language !== operation.language),
-            { language: operation.language, text: operation.text, answers: operation.answers },
+            { language: operation.language, text: operation.text, answers: operation.answers, imageAlt: operation.imageAlt },
           ],
         }
       else
@@ -41,7 +41,9 @@ export function applyQuestionOperations(
               ? content
               : operation.kind === 'text'
                 ? { ...content, text: operation.text }
-                : { ...content, answers: operation.answers },
+                : operation.kind === 'imageAlt'
+                  ? { ...content, imageAlt: operation.imageAlt }
+                  : { ...content, answers: operation.answers },
           ),
         }
     }

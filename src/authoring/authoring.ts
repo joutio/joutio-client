@@ -18,6 +18,8 @@ export interface QuestionContent {
   language: Language
   text: string
   answers: QuestionAnswer[]
+  /** Description de l'image dans cette langue (lecteurs d'écran), `null` si absente. */
+  imageAlt?: string | null
 }
 
 /** Question vue par l'auteur du sujet (`QuestionEditorView`), champs lus par l'app. */

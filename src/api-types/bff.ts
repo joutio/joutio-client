@@ -360,6 +360,31 @@ export type BadgeFamily =
   | 'EXPLORATION'
   | 'COLLECTION'
 
+/** Badge en bref (`ProgressionView.BadgeView` du BFF) : séquence du résultat. */
+export interface BadgeView {
+  code: string
+  /** Libellé source (français) du catalogue. */
+  label: string
+  family: BadgeFamily
+  tier: MasteryTier
+}
+
+/** Déblocage poussé sur `/topic/achievements/{userId}` (`AchievementView` du BFF). */
+export interface AchievementView {
+  kind: 'BADGE' | 'TITLE'
+  code: string | null
+  label: string | null
+  family: BadgeFamily | null
+  tier: string | null
+  metric: string | null
+  target: number | null
+  /** Sujet d'un titre, `null` pour un badge. */
+  topicId: string | null
+  /** Partie qui a débloqué le badge, `null` hors duel et pour un titre. */
+  gameId: string | null
+  at: string
+}
+
 /** Un palier de badge (`BadgeCollectionView.BadgeItemView`). */
 export interface BadgeItemView {
   code: string

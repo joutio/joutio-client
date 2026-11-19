@@ -73,7 +73,17 @@ describe('localizedQuestion', () => {
     const game = fold([created, round])
     expect(localizedQuestion(game.rounds['0'], 'en').questionText).toBe('Who was called the Sun King?')
     expect(localizedQuestion(game.rounds['0'], 'de').questionText).toBe('Qui fut surnommé le Roi-Soleil ?')
-    expect(localizedQuestion(undefined, 'fr')).toEqual({ questionText: '', answers: {} })
+    expect(localizedQuestion(undefined, 'fr')).toEqual({ questionText: '', answers: {}, imageAlt: '' })
+  })
+
+  it('reads the image description in the player language, then falls back to the source one', () => {
+    const game = fold([
+      created,
+      { ...round, imageUrl: 'https://img/x.webp', imageAlt: 'Portrait de Louis XIV', translations: { en: { text: 'Who?', answers: {}, imageAlt: 'Portrait of Louis XIV' } } },
+    ])
+    expect(localizedQuestion(game.rounds['0'], 'en').imageAlt).toBe('Portrait of Louis XIV')
+    expect(localizedQuestion(game.rounds['0'], 'fr').imageAlt).toBe('Portrait de Louis XIV')
+    expect(localizedQuestion(fold([created, round]).rounds['0'], 'fr').imageAlt).toBe('')
   })
 })
 

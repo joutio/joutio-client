@@ -1,4 +1,4 @@
-import type { TopicRefView as TopicRef, UserRefView as UserRef } from '../api-types/bff.js'
+import type { BadgeView, TopicRefView as TopicRef, UserRefView as UserRef } from '../api-types/bff.js'
 
 /** Choix de réponse à une question (enum backend `GameQuestionChoice`). */
 export type GameChoice = 'A' | 'B' | 'C' | 'D'
@@ -78,4 +78,9 @@ export interface GameResultView {
   botDifficulty: BotDifficulty | null
   /** Compte adversaire supprimé : identité masquée, pas de profil/revanche/signalement. */
   opponentDeleted: boolean
+  /**
+   * Badges débloqués par la partie, dans l'ordre d'obtention (séquence du résultat, après les titres). Vide tant que
+   * la projection ne les a pas écrits : l'achievement STOMP portant ce `gameId` fait relire le résultat.
+   */
+  badges: BadgeView[]
 }
