@@ -1,3 +1,9 @@
+## [8.12.0](https://github.com/joutio/joutio-client/compare/v8.11.0...v8.12.0) (2026-11-20)
+
+### Features
+
+* **block:** blocked players texts, view field and query ([c55ce25](https://github.com/joutio/joutio-client/commit/c55ce25f89a93e95fb85a882b1db84be22472063))
+
 ## [8.11.0](https://github.com/joutio/joutio-client/compare/v8.10.0...v8.11.0) (2026-11-20)
 
 ### Features
