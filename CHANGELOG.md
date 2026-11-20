@@ -1,3 +1,13 @@
+## [8.9.0](https://github.com/joutio/joutio-client/compare/v8.8.0...v8.9.0) (2026-11-20)
+
+### Features
+
+* **api-types:** premium on player views ([d0af623](https://github.com/joutio/joutio-client/commit/d0af62364a7125dddf8c9edc3382b7d50f67f8bc))
+
+### Bug Fixes
+
+* **i18n:** drop unused carousel keys ([152dcb1](https://github.com/joutio/joutio-client/commit/152dcb12e44b543a314dcb1e3473c23babc43f1c))
+
 ## [8.8.0](https://github.com/joutio/joutio-client/compare/v8.7.0...v8.8.0) (2026-11-20)
 
 ### Features
