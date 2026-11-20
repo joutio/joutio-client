@@ -1,3 +1,9 @@
+## [8.8.0](https://github.com/joutio/joutio-client/compare/v8.7.0...v8.8.0) (2026-11-20)
+
+### Features
+
+* **game:** answers appearance window before the answer timer ([c2fa369](https://github.com/joutio/joutio-client/commit/c2fa369342da8318481297fa81a8633ba644b4a1))
+
 ## [8.7.0](https://github.com/joutio/joutio-client/compare/v8.6.0...v8.7.0) (2026-11-19)
 
 ### Features
