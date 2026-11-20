@@ -1,3 +1,9 @@
+## [8.10.0](https://github.com/joutio/joutio-client/compare/v8.9.0...v8.10.0) (2026-11-20)
+
+### Features
+
+* **rooms:** challenge reminder delay and remindableAt ([d558f99](https://github.com/joutio/joutio-client/commit/d558f99b61a1b6c03cc151717539dca7fd238666))
+
 ## [8.9.0](https://github.com/joutio/joutio-client/compare/v8.8.0...v8.9.0) (2026-11-20)
 
 ### Features
