@@ -609,6 +609,7 @@ export const en: Messages = {
   'challenges.sent': "Sent",
   'challenges.rooms': "Rooms",
   'challenges.privateRooms': "Private rooms",
+  'challenges.acceptedChallenges': "Accepted challenges",
   'challenges.refuseAll': "Decline all",
   'challenges.refuseAllTitle': "Decline the {count} received challenges?",
   'challenges.refuseAllText': "The players will be told. You can still challenge them back.",

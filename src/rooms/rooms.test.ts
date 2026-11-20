@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyRoomNotification, applyRoomPresence, emptyRoom, isWaitingForViewer, preparationComplete, preparationStep, roomFailureKind, roomsWaitingForViewer, waitingStatusLabel, type RoomView } from './room.js'
+import { splitRoomsByOrigin, applyRoomNotification, applyRoomPresence, emptyRoom, isWaitingForViewer, preparationComplete, preparationStep, roomFailureKind, roomsWaitingForViewer, waitingStatusLabel, type RoomView } from './room.js'
 import { applyMatchmakingNotification, emptyMatchmaking } from './matchmaking.js'
 import type { RoomNotification } from './room-notification.js'
 
@@ -80,6 +80,7 @@ describe('roomsWaitingForViewer', () => {
     roomId: 'r1',
     topic: { topicId: 't1', names: { fr: 'Sujet' }, category: 'GENERAL', imageUrl: null, pictogramUrl: null } as unknown as RoomView['topic'],
     status: 'WAITING_PLAYERS',
+    origin: 'SHARED',
     vsBot: false,
     canCancel: true,
     opponent: null,
@@ -124,5 +125,14 @@ describe('applyRoomPresence', () => {
 
   it('returns undefined for an unknown room', () => {
     expect(applyRoomPresence([room({})], { roomId: 'r9', playerId: 'p2', present: true, at }, 'p1')).toBeUndefined()
+  })
+})
+
+describe('splitRoomsByOrigin', () => {
+  it('separates shared rooms from challenge rooms and leaves bot rooms out', () => {
+    const rooms = [{ origin: 'SHARED' as const }, { origin: 'CHALLENGE' as const }, { origin: 'REMATCH' as const }, { origin: 'BOT' as const }]
+    const { shared, challenges } = splitRoomsByOrigin(rooms)
+    expect(shared).toHaveLength(1)
+    expect(challenges.map((room) => room.origin)).toEqual(['CHALLENGE', 'REMATCH'])
   })
 })

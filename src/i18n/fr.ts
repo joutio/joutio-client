@@ -608,6 +608,7 @@ export const fr = {
   'challenges.sent': "Envoyés",
   'challenges.rooms': "Salons",
   'challenges.privateRooms': "Salons privés",
+  'challenges.acceptedChallenges': "Défis acceptés",
   'challenges.refuseAll': "Tout refuser",
   'challenges.refuseAllTitle': "Refuser les {count} défis reçus ?",
   'challenges.refuseAllText': "Les joueurs seront prévenus. Tu pourras toujours les défier à ton tour.",

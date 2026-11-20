@@ -18,11 +18,16 @@ export type RoomStatus =
   | 'FAILED'
 
 /** Vue d'une salle (`RoomView`). Le partage se fait via `/join/{roomId}`. */
+/** Origine d'une salle, fixée à sa création (`RoomOrigin` de matchmaking). */
+export type RoomOrigin = 'SHARED' | 'CHALLENGE' | 'REMATCH' | 'MATCHMAKING' | 'BOT'
+
 export interface RoomView {
   roomId: string
   topic: TopicRef
   status: RoomStatus
   vsBot: boolean
+  /** Salon privé partagé, défi accepté, revanche, appariement ou entraînement. */
+  origin: RoomOrigin
   /** Vrai si le viewer est l'initiateur (seul habilité à annuler la salle). */
   canCancel: boolean
   opponent: RoomOpponentView | null
@@ -312,5 +317,16 @@ export function applyRoomNotification(room: Room, notification: RoomNotification
       void unreachable
       return room
     }
+  }
+}
+
+/**
+ * Sections de l'onglet Salons (`defis.md`) : salons privés partagés par lien, et salles avec un adversaire désigné (défi
+ * accepté, revanche, appariement). Les salles du bot n'apparaissent dans aucune.
+ */
+export function splitRoomsByOrigin<T extends Pick<RoomView, 'origin'>>(rooms: readonly T[]) {
+  return {
+    shared: rooms.filter((room) => room.origin === 'SHARED'),
+    challenges: rooms.filter((room) => room.origin === 'CHALLENGE' || room.origin === 'REMATCH' || room.origin === 'MATCHMAKING'),
   }
 }
