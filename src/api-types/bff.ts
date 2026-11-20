@@ -347,6 +347,8 @@ export interface ChallengeView {
   gameId: string | null
   createdAt: string
   expiresAt: string
+  /** Prochaine relance possible par le lanceur (10 min après l'envoi, puis après chaque relance). */
+  remindableAt: string
 }
 
 export type UserReportReason = 'HARASSMENT' | 'HATE_SPEECH' | 'INAPPROPRIATE_CONTENT' | 'CHEATING' | 'SPAM' | 'OTHER'

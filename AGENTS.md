@@ -13,7 +13,7 @@ et le contrat du BFF ([`docs/api/`](../../docs/api/README.md)).
 | `@joutio/client/<module>` | Contenu |
 |---|---|
 | `game` | constantes du duel, read model `GameState`, repli des notifications, chronologie de l'arène (`sceneAt`), horloge serveur (`ClockState` : aller-retour de RTT minimal, trames en borne basse), DTOs de résultat |
-| `rooms` | salles (`Room`, repli, étapes de préparation, cadence des relances) et appariement (`Matchmaking`) |
+| `rooms` | salles (`Room`, repli, étapes de préparation, cadence des relances), relance d'un défi envoyé (`remindDelay`, `afterReminder`) et appariement (`Matchmaking`) |
 | `authoring` | atelier : rôles, actions sur une question, brouillons, plan de modifications, signalements, plafonds, titres par palier |
 | `premium` | limites du plan (`planLimits`), sujets gelés (`isFrozen`), problèmes de limite (`QUOTA_PROBLEMS`), accroches |
 | `profile` | règles du pseudonyme (miroir de `joutio-profile`) et de la date de naissance, 15 ans minimum (miroir de `joutio-identity`) |
