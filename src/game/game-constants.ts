@@ -16,6 +16,16 @@ export const isBonusRound = (round: number): boolean => round === ROUNDS - 1
 export const QUESTION_READ_MS = 2000
 export const ANSWER_REVEAL_STAGGER_MS = 120
 
+/** Entrée d'une carte réponse (jeton `motion.base` du lab). */
+export const ANSWER_ENTER_MS = 500
+
+/**
+ * Apparition des 4 réponses après la révélation (`GameRules.ANSWERS_APPEAR_MS` de joutio-game, à garder égales) :
+ * les cartes se cliquent dès leur entrée, le chrono de `ROUND_SECONDS` ne part qu'à la fin. Le serveur fixe donc
+ * `answerDeadlineAt = revealedAt + ANSWERS_APPEAR_MS + ROUND_SECONDS`.
+ */
+export const ANSWERS_APPEAR_MS = 3 * ANSWER_REVEAL_STAGGER_MS + ANSWER_ENTER_MS
+
 /**
  * Durées purement présentationnelles (le serveur reste source de vérité du chrono) :
  * l'écran VS et la transition avant le premier round.

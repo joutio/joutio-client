@@ -40,6 +40,11 @@ export type ArenaScene =
       round: number
       roundState: GameRoundState
       locked: boolean
+      /**
+       * Le chrono tourne : réponses révélées **et** apparues (`answerDeadlineAt − ROUND_SECONDS`). Pendant
+       * l'apparition (`ANSWERS_APPEAR_MS`), les cartes se cliquent déjà mais `timeLeft` reste à `ROUND_SECONDS`.
+       */
+      timerRunning: boolean
       timeLeft: number
       elapsedMs: number
       overdue: boolean
@@ -273,11 +278,13 @@ export function sceneAt(game: GameState, now: number, graceMs: number = TRANSITI
       const questionStart = instantToMillis(round.shownAt) ?? active.startAt
       const elapsed = ahead ? 0 : Math.max(0, now - questionStart)
       const timeLeft = active.locked || active.deadlineAt == null ? ROUND_SECONDS : clamp((active.deadlineAt - now) / 1000, 0, ROUND_SECONDS)
+      const timerRunning = !active.locked && !ahead && active.deadlineAt != null && now >= active.deadlineAt - ROUND_SECONDS * 1000
       return {
         kind: 'question',
         round: active.round,
         roundState: round,
         locked: active.locked,
+        timerRunning,
         timeLeft,
         elapsedMs: elapsed,
         overdue,

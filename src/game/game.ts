@@ -1,5 +1,5 @@
 import type { RoundQuestionTranslation } from './game-notification.js'
-import { ROUND_SECONDS } from './game-constants.js'
+import { ANSWERS_APPEAR_MS, ROUND_SECONDS } from './game-constants.js'
 
 /** Convertit un instant ISO (renvoyé par l'API) en ms epoch (`null` si absent/invalide). */
 export function instantToMillis(value?: string | null): number | null {
@@ -116,7 +116,8 @@ export function firstAnswerPct(round: GameRoundState | null): number | null {
   const times = Object.values(round.playerAnswers).map((answer) => answer.timeMs)
   if (times.length === 0) return null
   const fastest = Math.min(...times)
-  const pct = (1 - fastest / (ROUND_SECONDS * 1000)) * 100
+  // Le temps compte depuis la révélation ; la barre ne part qu'après l'apparition des réponses.
+  const pct = (1 - (fastest - ANSWERS_APPEAR_MS) / (ROUND_SECONDS * 1000)) * 100
   return Math.min(100, Math.max(0, pct))
 }
 
@@ -144,8 +145,8 @@ export function firstResponder(round: GameRoundState | null, userId: string, opp
 
 /**
  * Deadline de réponse d'un round (ms epoch) : l'échéance autoritaire `answerDeadlineAt` si le
- * serveur l'a poussée, sinon une projection `revealAt + ROUND_SECONDS` — le serveur arme le
- * chrono à `revealAt` (`GameAggregate`). Permet au décompte de démarrer à l'heure même quand la
+ * serveur l'a poussée, sinon une projection `revealAt + ANSWERS_APPEAR_MS + ROUND_SECONDS`
+ * (`GameAggregate`). Permet au décompte de démarrer à l'heure même quand la
  * trame `QUESTION_REVEALED` est en retard sur une connexion faible.
  */
 export function answerDeadlineMs(round: GameRoundState | null | undefined): number | null {
@@ -156,7 +157,7 @@ export function answerDeadlineMs(round: GameRoundState | null | undefined): numb
   }
   if (round.revealAt) {
     const revealAt = Date.parse(round.revealAt)
-    if (Number.isFinite(revealAt)) return revealAt + ROUND_SECONDS * 1000
+    if (Number.isFinite(revealAt)) return revealAt + ANSWERS_APPEAR_MS + ROUND_SECONDS * 1000
   }
   return null
 }

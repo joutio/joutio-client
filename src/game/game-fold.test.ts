@@ -51,7 +51,7 @@ describe('applyGameNotification', () => {
     expect(game.rounds['0']?.phase).toBe('CLOSED')
     expect(game.rounds['0']?.correctAnswer).toBe('B')
     expect(frozenTimeLeft(game.rounds['0'] ?? null)).toBe(5)
-    expect(firstAnswerPct(game.rounds['0'] ?? null)).toBeCloseTo(70)
+    expect(firstAnswerPct(game.rounds['0'] ?? null)).toBeCloseTo(78.6)
   })
 
   it('takes the authoritative final scores and winner at the end', () => {
