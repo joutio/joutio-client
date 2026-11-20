@@ -1,3 +1,9 @@
+## [8.11.0](https://github.com/joutio/joutio-client/compare/v8.10.0...v8.11.0) (2026-11-20)
+
+### Features
+
+* **rooms:** room origin and Rooms tab sections ([43766c8](https://github.com/joutio/joutio-client/commit/43766c86483e713ca8a0a6ac04cd6375fb8513b1))
+
 ## [8.10.0](https://github.com/joutio/joutio-client/compare/v8.9.0...v8.10.0) (2026-11-20)
 
 ### Features
