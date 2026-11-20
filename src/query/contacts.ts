@@ -24,6 +24,7 @@ export const cardOf = (profile: PlayerProfileView): PlayerCardView => ({
   following: true,
   presence: profile.presence,
   suspended: profile.suspended,
+  premium: profile.premium,
 })
 
 /** Insère la carte à sa place dans les pages chargées ; au-delà de la dernière page chargée, la pagination l'apportera. */

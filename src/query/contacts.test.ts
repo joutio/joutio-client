@@ -13,6 +13,7 @@ const card = (userId: string, pseudonym: string, rating = 1000): PlayerCardView 
   following: true,
   presence: null,
   suspended: false,
+  premium: false,
 })
 const pages = (...content: PlayerCardView[][]): InfiniteData<PageResponse<PlayerCardView>> => ({
   pageParams: content.map((_page, index) => index),

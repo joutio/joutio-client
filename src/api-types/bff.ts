@@ -193,6 +193,8 @@ export interface LeaderboardEntryView {
   totalXp: number
   monthlyXp: number
   suspended: boolean
+  /** Premium accordé (badge après le pseudonyme) ; un admin n'en a pas d'office. */
+  premium: boolean
 }
 
 export interface TopicRefView {
@@ -212,6 +214,8 @@ export interface UserRefView {
   pseudonym: string
   avatarOptions: string | null
   suspended: boolean
+  /** Premium accordé (badge après le pseudonyme) ; un admin n'en a pas d'office. */
+  premium: boolean
 }
 
 /** `RoomView.opponent` / notification `MATCHED` : adversaire enrichi par le BFF (Elo, pays). */
@@ -289,6 +293,8 @@ export interface PlayerProfileView {
   followersCount: number
   followingCount: number
   suspended: boolean
+  /** Premium accordé (badge après le pseudonyme) ; un admin n'en a pas d'office. */
+  premium: boolean
   bot: boolean
 }
 
@@ -323,6 +329,8 @@ export interface PlayerCardView {
   following: boolean
   presence: { userId: string; status: PresenceStatus; lastSeenAt: string | null } | null
   suspended: boolean
+  /** Premium accordé (badge après le pseudonyme) ; un admin n'en a pas d'office. */
+  premium: boolean
 }
 
 export type ChallengeStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'CANCELLED' | 'EXPIRED'
@@ -450,6 +458,8 @@ export interface SuggestionView {
   avatarOptions: string | null
   names: TopicNames | null
   suspended: boolean
+  /** Premium accordé (badge après le pseudonyme) ; un admin n'en a pas d'office. */
+  premium: boolean
   /** Sujet éditorial de Joutio (badge « Officiel », 2026-11-15). */
   official?: boolean
 }
