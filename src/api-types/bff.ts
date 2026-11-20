@@ -295,6 +295,8 @@ export interface PlayerProfileView {
   suspended: boolean
   /** Premium accordé (badge après le pseudonyme) ; un admin n'en a pas d'office. */
   premium: boolean
+  /** Le joueur courant a bloqué ce joueur : « Débloquer » à la place de Défier et Suivre. */
+  blocked: boolean
   bot: boolean
 }
 

@@ -15,6 +15,7 @@ import type {
   TopicOverviewView,
   TopicStatView,
   UnreadCountView,
+  UserRefView,
 } from '../api-types/bff.js'
 import type { ReportedQuestion, TeamMember, TopicTodo, TopicWorkshop } from '../authoring/authoring.js'
 import type { ActiveGameView, GameResultView } from '../game/game-dto.js'
@@ -37,6 +38,7 @@ const read = <K extends readonly unknown[], T>(queryKey: K, queryFn: () => Promi
 // Joueur connecté
 export const meQuery = (http: HttpClient) => read(queryKeys.me(), () => http.get<MeView>('/api/me'))
 export const rewardsQuery = (http: HttpClient) => read(queryKeys.rewards(), () => http.get<RewardsView>('/api/me/rewards'))
+export const blockedPlayersQuery = (http: HttpClient) => read(queryKeys.blockedPlayers(), () => http.get<UserRefView[]>('/api/me/blocked'))
 export const pseudonymAvailabilityQuery = (http: HttpClient, value: string, key: string) =>
   read(queryKeys.pseudonymAvailability(key), () => http.get<PseudonymAvailability>('/api/profiles/pseudonym-availability', { query: { value } }))
 export const notificationPreferencesQuery = (http: HttpClient) =>

@@ -8,6 +8,8 @@ export const queryKeys = {
   /** Disponibilité d'un pseudonyme, par clé normalisée (`pseudonymKey`). */
   pseudonymAvailability: (key: string) => ['me', 'pseudonym-availability', key] as const,
   rewards: () => ['me', 'rewards'] as const,
+  /** Joueurs bloqués par le joueur courant (Réglages › Confidentialité). */
+  blockedPlayers: () => ['me', 'blocked'] as const,
   /** Horloge du serveur (`/api/clock`). */
   serverTime: () => ['server-time'] as const,
   /** Recherche globale. */
