@@ -527,6 +527,7 @@ export const en: Messages = {
   'player.reportSubtitle': "From their profile",
   'privacy.blockedEmpty': "No blocked players",
   'privacy.blockedEmptyText': "Players you block will appear here.",
+  'privacy.blockedFooter': "A blocked player can no longer challenge you, follow you or be matched with you, and neither can you.",
   'player.blockError': "The player couldn't be blocked",
   'player.unblockError': "The player couldn't be unblocked",
   'player.unavailable': "This action isn't available with this player",

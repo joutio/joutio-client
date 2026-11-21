@@ -526,6 +526,7 @@ export const fr = {
   'player.reportSubtitle': "Depuis sa fiche",
   'privacy.blockedEmpty': "Aucun joueur bloqué",
   'privacy.blockedEmptyText': "Les joueurs que tu bloques apparaîtront ici.",
+  'privacy.blockedFooter': "Un joueur bloqué ne peut plus te défier, te suivre ni t'être opposé, et toi non plus.",
   'player.blockError': "Le joueur n'a pas pu être bloqué",
   'player.unblockError': "Le joueur n'a pas pu être débloqué",
   'player.unavailable': "Action impossible avec ce joueur",
