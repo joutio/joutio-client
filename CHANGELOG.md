@@ -1,3 +1,9 @@
+## [8.14.0](https://github.com/joutio/joutio-client/compare/v8.13.0...v8.14.0) (2026-11-21)
+
+### Features
+
+* **block:** shared cache update for blocking a player ([50cb887](https://github.com/joutio/joutio-client/commit/50cb88727514e7caa49a5759a271b5d6cb798f0c))
+
 ## [8.13.0](https://github.com/joutio/joutio-client/compare/v8.12.0...v8.13.0) (2026-11-21)
 
 ### Features
