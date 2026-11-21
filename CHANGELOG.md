@@ -1,3 +1,9 @@
+## [8.13.0](https://github.com/joutio/joutio-client/compare/v8.12.0...v8.13.0) (2026-11-21)
+
+### Features
+
+* **block:** blocked players list footer text ([eb2d79c](https://github.com/joutio/joutio-client/commit/eb2d79c6cbdb92f5d85fda84c2a795d0c12d545c))
+
 ## [8.12.0](https://github.com/joutio/joutio-client/compare/v8.11.0...v8.12.0) (2026-11-20)
 
 ### Features
