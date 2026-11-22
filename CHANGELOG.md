@@ -1,3 +1,15 @@
+## [9.0.0](https://github.com/joutio/joutio-client/compare/v8.14.0...v9.0.0) (2026-11-22)
+
+### ⚠ BREAKING CHANGES
+
+* v9 - GameState/GameNotification/RoomNotification and the
+query/reads factories are removed; the apps must migrate to the feature
+hooks and implement the extended HttpClient plus RealtimeTransport.
+
+### Features
+
+* feature-based domain, event streams and query/command services ([28f8ae0](https://github.com/joutio/joutio-client/commit/28f8ae0a492d680325d25bb3aa76b60c7ce96924))
+
 ## [8.14.0](https://github.com/joutio/joutio-client/compare/v8.13.0...v8.14.0) (2026-11-21)
 
 ### Features
