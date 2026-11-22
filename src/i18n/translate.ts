@@ -1,4 +1,4 @@
-import type { Language } from '../api-types/index.js'
+import type { Language } from '../types/common.js'
 import { en } from './en.js'
 import { fr, type Messages } from './fr.js'
 

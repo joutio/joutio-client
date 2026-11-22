@@ -1,94 +1,87 @@
+import { meKeys } from '../features/me/hooks/use-me.js'
+import { topicsKeys, topicKeys } from '../features/topics/hooks/use-topics.js'
+import { profileKeys } from '../features/profile/hooks/use-profile.js'
+import { contactsKeys } from '../features/social/hooks/use-contacts.js'
+import { challengesKeys } from '../features/challenges/hooks/use-challenges.js'
+import { roomsKeys } from '../features/rooms/hooks/use-rooms.js'
+import { gamesKeys, serverTimeKeys } from '../features/game/hooks/use-game.js'
+import { notificationPreferencesKeys, notificationsKeys } from '../features/notifications/hooks/use-notifications.js'
+import { authoringKeys } from '../features/authoring/hooks/use-authoring.js'
+import { homeKeys } from '../features/home/hooks/use-home.js'
+import { suggestionsKeys } from '../features/search/hooks/use-search.js'
+import { onboardingKeys } from '../features/onboarding/hooks/use-onboarding.js'
+
 /**
- * Clés React Query des deux apps, hiérarchiques : un préfixe (`topic.all`, `profiles.all`, `authoring.topic`…) vise
- * toutes les vues d'une entité. Les invalidations, du temps réel comme des mutations, visent ces clés, jamais une
- * chaîne écrite à la main. Toujours des fonctions, même sans paramètre.
+ * Clés React Query agrégées des deux apps, hiérarchiques : un préfixe (`topic.all`, `profiles.all`,
+ * `authoring.topic`…) vise toutes les vues d'une entité. Les invalidations, du temps réel comme des mutations,
+ * visent ces clés, jamais une chaîne écrite à la main. Chaque clé est **définie** dans les `queries.ts` de sa
+ * feature ; cette table ne fait que les assembler pour les écritures transversales (`query/`, `realtime/`, apps).
  */
 export const queryKeys = {
-  me: () => ['me'] as const,
+  me: meKeys.me,
   /** Disponibilité d'un pseudonyme, par clé normalisée (`pseudonymKey`). */
-  pseudonymAvailability: (key: string) => ['me', 'pseudonym-availability', key] as const,
-  rewards: () => ['me', 'rewards'] as const,
+  pseudonymAvailability: meKeys.pseudonymAvailability,
+  rewards: meKeys.rewards,
   /** Joueurs bloqués par le joueur courant (Réglages › Confidentialité). */
-  blockedPlayers: () => ['me', 'blocked'] as const,
+  blockedPlayers: meKeys.blockedPlayers,
   /** Horloge du serveur (`/api/clock`). */
-  serverTime: () => ['server-time'] as const,
+  serverTime: serverTimeKeys.all,
   /** Recherche globale. */
-  suggestions: {
-    term: (term: string) => ['suggestions', term] as const,
-    players: (query: string) => ['suggestions', 'players', query] as const,
-  },
-  home: () => ['home'] as const,
+  suggestions: suggestionsKeys,
+  home: homeKeys.all,
   topics: {
-    all: () => ['topics'] as const,
+    all: topicsKeys.all,
     /** Toutes les pages du catalogue, quel que soit le filtre. */
-    lists: () => ['topics', 'list'] as const,
-    list: (filters: object) => ['topics', 'list', filters] as const,
-    facets: (query: string, scope = 'ALL') => ['topics', 'facets', query, { scope }] as const,
+    lists: topicsKeys.lists,
+    list: topicsKeys.list,
+    facets: topicsKeys.facets,
   },
-  topic: {
-    all: (topicId: string) => ['topic', topicId] as const,
-    overview: (topicId: string) => ['topic', topicId, 'overview'] as const,
-    leaderboard: (topicId: string) => ['topic', topicId, 'leaderboard'] as const,
-    /** Classement filtré et paginé (Tous les classements). */
-    board: (topicId: string, filters: object) => ['topic', topicId, 'board', filters] as const,
-    games: (topicId: string, userId: string) => ['topic', topicId, 'games', userId] as const,
-  },
+  topic: topicKeys,
   profiles: {
     /** Tout ce qui concerne un joueur (profil, titres, badges, parties…). */
-    all: (userId: string) => ['profiles', userId] as const,
-    profile: (userId: string) => ['profiles', userId, 'profile'] as const,
-    activity: (userId: string) => ['profiles', userId, 'activity'] as const,
-    titles: (userId: string) => ['profiles', userId, 'titles'] as const,
-    badges: (userId: string) => ['profiles', userId, 'badges'] as const,
-    topics: (userId: string) => ['profiles', userId, 'topics'] as const,
-    recentGames: (userId: string) => ['profiles', userId, 'games', 'recent'] as const,
-    games: (userId: string, filters: object) => ['profiles', userId, 'games', filters] as const,
-    headToHead: (userId: string, against: string) => ['profiles', userId, 'head-to-head', against] as const,
+    all: profileKeys.all,
+    profile: profileKeys.profile,
+    activity: profileKeys.activity,
+    titles: profileKeys.titles,
+    badges: profileKeys.badges,
+    topics: profileKeys.topics,
+    recentGames: profileKeys.recentGames,
+    games: profileKeys.games,
+    headToHead: profileKeys.headToHead,
   },
   /** Abonnements / abonnés d'un joueur, par recherche et tri. */
-  contacts: {
-    all: () => ['contacts'] as const,
-    list: (userId: string, direction: 'following' | 'followers', query: string, sort: string) => ['contacts', userId, direction, query, sort] as const,
-  },
+  contacts: contactsKeys,
   /** Défis nominatifs du joueur (reçus et envoyés). */
-  challenges: () => ['challenges', 'mine'] as const,
+  challenges: challengesKeys.mine,
   /** Salons du joueur (`/api/rooms/mine`) : Défis, sa pastille et la reprise de partie. */
-  myRooms: () => ['rooms', 'mine'] as const,
+  myRooms: roomsKeys.myRooms,
   /** Un salon (`/api/rooms/{id}`). */
-  room: (roomId: string) => ['rooms', 'room', roomId] as const,
-  games: {
-    /** Toutes les listes de parties en cours (préfixe). */
-    activeAll: () => ['games', 'active'] as const,
-    /** Parties en cours du joueur (`/api/games?active=true`). */
-    active: (userId: string) => ['games', 'active', userId] as const,
-    result: (gameId: string) => ['games', gameId, 'result'] as const,
-    notifications: (gameId: string) => ['games', gameId, 'notifications'] as const,
-    streakUnlock: (gameId: string) => ['games', gameId, 'streak-unlock'] as const,
-  },
+  room: roomsKeys.room,
+  games: gamesKeys,
   notifications: {
-    all: () => ['notifications'] as const,
-    list: () => ['notifications', 'list'] as const,
-    unreadCount: () => ['notifications', 'unread-count'] as const,
+    all: notificationsKeys.all,
+    list: notificationsKeys.list,
+    unreadCount: notificationsKeys.unreadCount,
   },
-  notificationPreferences: () => ['notification-preferences'] as const,
+  notificationPreferences: notificationPreferencesKeys.all,
   /** Atelier de création (`creation.md`). */
   authoring: {
-    all: () => ['authoring'] as const,
-    topics: () => ['authoring', 'topics'] as const,
-    created: () => ['authoring', 'created'] as const,
-    todo: () => ['authoring', 'todo'] as const,
+    all: authoringKeys.all,
+    topics: authoringKeys.topics,
+    created: authoringKeys.created,
+    todo: authoringKeys.todo,
     /** Sujets publiés au nom proche, pour l'avertissement de doublon de « Nouveau sujet ». */
-    named: (query: string) => ['authoring', 'named', query] as const,
+    named: authoringKeys.named,
     /** Tout l'atelier d'un sujet (préfixe). */
-    topic: (topicId: string) => ['authoring', topicId] as const,
-    workshop: (topicId: string) => ['authoring', topicId, 'workshop'] as const,
-    questions: (topicId: string) => ['authoring', topicId, 'questions'] as const,
-    reports: (topicId: string) => ['authoring', topicId, 'reports'] as const,
-    team: (topicId: string) => ['authoring', topicId, 'team'] as const,
+    topic: authoringKeys.topic,
+    workshop: authoringKeys.workshop,
+    questions: authoringKeys.questions,
+    reports: authoringKeys.reports,
+    team: authoringKeys.team,
     /** Détails de signalement d'un sujet (préfixe). */
-    reportDetails: (topicId: string) => ['authoring', topicId, 'report-detail'] as const,
+    reportDetails: authoringKeys.reportDetails,
   },
   onboarding: {
-    recommendations: (interests: readonly string[]) => ['onboarding', 'recommendations', [...interests]] as const,
+    recommendations: onboardingKeys.recommendations,
   },
 } as const

@@ -1,4 +1,4 @@
-import type { Language } from '../../api-types/index.js'
+import type { Language } from '../../types/common.js'
 import { avatarEn } from './en.js'
 import { avatarFr } from './fr.js'
 

@@ -10,34 +10,74 @@ et le contrat du BFF ([`docs/api/`](../../docs/api/README.md)).
 
 ## Modules
 
-| `@joutio/client/<module>` | Contenu |
+`@joutio/client` est organisé par **feature** (avenant ADR 0001 du 2026-11-22) : une feature = unité qui possède
+de la donnée serveur et des hooks ; un module = aide pure sans hook.
+
+| `@joutio/client/<sous-chemin>` | Contenu |
 |---|---|
-| `game` | constantes du duel, read model `GameState`, repli des notifications, chronologie de l'arène (`sceneAt`), horloge serveur (`ClockState` : aller-retour de RTT minimal, trames en borne basse), DTOs de résultat |
-| `rooms` | salles (`Room`, repli, étapes de préparation, cadence des relances), relance d'un défi envoyé (`remindDelay`, `afterReminder`) et appariement (`Matchmaking`) |
-| `authoring` | atelier : rôles, actions sur une question, brouillons, plan de modifications, signalements, plafonds, titres par palier |
-| `premium` | limites du plan (`planLimits`), sujets gelés (`isFrozen`), problèmes de limite (`QUOTA_PROBLEMS`), accroches |
-| `profile` | règles du pseudonyme (miroir de `joutio-profile`) et de la date de naissance, 15 ans minimum (miroir de `joutio-identity`) |
+| `features/game` | partie, manches, résultat : `Game` (classe réagissant aux `GameEvent`), arène (`Arena.sceneAt`), horloge (`ClockState`), règles du duel, lectures `/api/games` et commandes (réponse, abandon), `useGameStream` |
+| `features/rooms` | salles et appariement : `Room` et `Matchmaking` (classes réagissant aux `RoomEvent`/`MatchmakingEvent`), étapes de préparation, cadence des relances, projections de la vue REST, lectures et commandes, `useRoomStream`/`useMatchmakingStream` |
+| `features/challenges` | défis nominatifs : `ChallengeView`, relance d'un défi envoyé (`remindDelay`, `afterReminder`), lectures et commandes (envoyer, accepter, décliner, annuler, relancer) |
+| `features/authoring` | atelier : rôles, actions sur une question, brouillons, plan de modifications, signalements, plafonds, titres par palier, schémas des formulaires d'atelier, lectures et commandes (sujets champ par champ, questions, équipe, modération, signalements) |
+| `features/profile` | profil public : règles du pseudonyme et de la date de naissance, présence, progression (XP, Elo, badges, titres), schémas pseudonyme/date de naissance, lectures `/api/profiles/{id}/*` (dont l'historique paginé) et commandes (pseudonyme, bio, pays, bannière, langue, avatar) |
+| `features/me` | compte connecté : `MeView`, récompenses, bloqués, disponibilité du pseudonyme, schémas de connexion (e-mail, OTP) et d'édition du profil, petits hooks à `select` (`useMyId`, `useIsPremium`…), commandes (date de naissance, CGU, centres d'intérêt, suppression) |
+| `features/premium` | limites du plan (`planLimits`), sujets gelés (`isFrozen`), problèmes de limite (`QUOTA_PROBLEMS`), accroches — logique pure, aucune lecture |
+| `features/topics` | sujets : catalogue paginé (fusion multi-univers), facettes, fiche (`TopicOverviewView`), classements (fiche + complets paginés), DTOs du domaine, commandes (suivre / ne plus suivre) |
+| `features/search` | clés de la recherche globale (`suggestions`) |
+| `features/social` | listes de personnes paginées (abonnements/abonnés), `cardOf`, commandes (suivre, bloquer) |
+| `features/notifications` | inbox : `NotificationView` (REST + flux STOMP), pagination, non-lues, préférences, commandes (lire, retirer, préférences) |
+| `features/home` | rails de l'Accueil (`HomeView`) |
+| `features/onboarding` | recommandations de sujets, commande de complétion |
+| `types` | contrats communs du BFF : `ApiError` (RFC 7807), `PageResponse`, `IdResponse`, `Language` |
+| `http.ts` | `HttpClient` (`get`/`post`/`put`/`delete` avec `{ body, query, signal }`), `AbortSignalLike`, `segment()` — les apps l'implémentent (`lib/api`) |
+| `query` | infra transversale du cache : clés agrégées (`queryKeys`, assemblées depuis les fabriques exportées des `hooks/use-<f>.ts`), transaction optimiste (`optimisticUpdate`), mises à jour de cache pures (`applyFollow`, `applyBlock` et `blockKeys`) |
+| `realtime` | `RealtimeTransport` injecté (les apps l'implémentent, `lib/ws`), `EventStream` + `useEventStream` (moteur de flux : rejeu REST, dédup par séquence, replay à la reconnexion), flux personnel (`usePersonalNotifications`, `useRoomPresenceEvents`) et invalidation des événements du bus (`usePersonalInvalidation`) |
 | `geo` | pays ISO 3166-1 alpha-2 : liste, noms FR/EN embarqués, tri, recherche sans accents, drapeaux |
 | `share` | liens universels `go.joutio.com` : construction et analyse |
-| `query` | clés React Query hiérarchiques (`queryKeys`), lectures communes du BFF (`meQuery`, `profileQuery`… : clé + `queryFn` sur un `HttpClient` injecté), transaction optimiste (`optimisticUpdate`, retour arrière ciblé), mises à jour de cache pures (`applyFollow`, `applyBlock` et `blockKeys`). `@tanstack/query-core` en dépendance pair, aucun hook |
-| `forms` | schémas Zod des formulaires des deux apps (connexion, code, date de naissance, profil, sujet, titres, question, modération, signalements), limites de saisie ; messages = clés `i18n`. `zod` en dépendance pair |
 | `i18n` | textes FR/EN des deux apps (`fr.ts` fait foi, `en.ts` typé), `translate`, `formatNumber`, `formatDate`, `dayLabel`, `pluralOf`, `tierKey`, `categoryKey`, `avatarLabel` (dictionnaire de l'éditeur d'avatar, `avatar/`). Préfixes : aucun (commun), `mobile.`, `ds.` |
-| `api-types` | DTOs du BFF (`*View`, `*Request`) et erreur RFC 7807 (`ApiError`) |
+
+Dans chaque feature :
+
+- `index.ts` : surface publique ;
+- `types.ts` : **tout** le vocabulaire de types — états du domaine, commandes, DTOs du BFF du domaine, ré-exports ;
+- `domain/` : modèles purs, sans I/O ni React. Un modèle qui réagit à des événements est une **classe** (`Game`,
+  `Room`…) avec `static empty(…)` et une méthode par événement (`onGameEvent`, `onRoomEvent`…) ; les événements
+  vivent dans `domain/<f>-event.ts` ; les règles et helpers purs dans des fichiers par sujet (`round.ts`,
+  `room-view.ts`, `preparation.ts`…) ; pas de `utils/`, pas de fourre-tout ;
+- `services/<f>-query.service.ts` : lectures (`getX`), `services/<f>-command.service.ts` : écritures (`createX`,
+  `updateX`…). Un service ne contient que des fonctions d'endpoints pures — **aucun type exporté** ;
+- `hooks/use-<f>.ts` : clés exportées + `useQuery`/`useMutation` directs sur les fonctions du service, avec `signal`
+  et `skipToken` ; les flux d'événements sont des hooks dédiés (`use-game-stream.ts`, `use-room-stream.ts`) ;
+- `schema/<f>.schema.ts` : schémas Zod (messages = clés `i18n`), seulement où il y a des formulaires ;
+- `tests/` : tous les tests de la feature.
+
+**Propriété des DTOs** : un DTO du BFF appartient à la feature de son domaine (fiches `docs/api/`) — ex.
+`UserRefView` → `profile`, `TopicCardView` → `topics`, `ChallengeView` → `challenges`. Les autres features
+l'importent en `import type` depuis son `types.ts`, jamais de re-définition.
 
 L'entrée racine réexporte tout, sauf `i18n` (sous-chemin `@joutio/client/i18n` seulement).
 
 ## Règles
 
-- **Aucun framework ni plateforme** (seules dépendances : `zod` et `@tanstack/query-core` en pair, ADR 0001 avenant du 2026-11-17) : pas de `react`, `react-native`, `expo`, `vite` ; pas de
-  `window`, `document`, `fetch`, `localStorage`, `navigator`, `WebSocket`. ESLint l'interdit.
-  `lib: ["ES2023"]` sans DOM ; tests Vitest en environnement `node`.
-- Fonctions pures et types. Pas d'I/O ni d'horloge implicite : l'instant courant est un paramètre
-  (`now`).
+- **Aucune plateforme** (ADR 0001, avenant 2026-11-22) : `react` (hooks uniquement) et `@tanstack/react-query`
+  (peer) sont autorisés ; pas de `react-native`, `expo`, `vite`, ni `window`, `document`, `fetch`, `localStorage`,
+  `navigator`, `WebSocket`. ESLint l'interdit. `lib: ["ES2023"]` sans DOM ; tests des modules purs en
+  environnement `node`, tests de hooks en jsdom (`// @vitest-environment jsdom`) + `@testing-library/react`.
+- Fonctions pures et types. Pas d'I/O ni d'horloge implicite : l'instant courant est un paramètre (`now`).
+- `http` (et `subscribe` pour le temps réel) est **injecté** : les fabriques et hooks le reçoivent en paramètre,
+  il n'est jamais dans une clé de cache (règle ESLint `exhaustive-deps` configurée en conséquence).
+- `userId` est passé explicitement par l'app (lu dans sa session) ; un paramètre absent donne `skipToken`, jamais
+  une clé contenant `''` ; `useMe()` n'a pas d'argument.
+- Aucun composant d'affichage (`.tsx`), aucun store, aucune navigation dans la lib.
+- Un service ne porte **aucun type** : le vocabulaire vit dans `types.ts`, les fonctions d'endpoints dans les
+  services.
 - Le serveur reste autoritaire (score, Elo, XP) : le client projette et affiche.
 - Des codes sémantiques (`OR`, `SCIENCE`), jamais une couleur ou une valeur de design (elles
   vivent dans les jetons du lab).
-- Imports relatifs avec l'extension `.js` (résolution `NodeNext`).
-- Un contrat du BFF qui change est reporté **ici d'abord**, puis les apps montent de version.
+- Imports relatifs avec l'extension `.js` (résolution `NodeNext`) ; entre features, `import type` direct depuis le
+  `types.ts` propriétaire (jamais via l'`index.ts` barrel, pour éviter les cycles).
+- Un contrat du BFF qui change est reporté **ici d'abord** (DTO dans la feature de son domaine), puis les apps
+  montent de version.
 - Une règle métier dupliquée d'un service (pseudonyme, âge) suit le service à chaque évolution.
 
 ## Commandes

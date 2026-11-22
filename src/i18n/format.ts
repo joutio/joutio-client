@@ -1,4 +1,4 @@
-import type { Language } from '../api-types/index.js'
+import type { Language } from '../types/common.js'
 
 /** `2 418` (fr) ou `2,418` (en). */
 export const formatNumber = (value: number, language: Language | string = 'fr') => new Intl.NumberFormat(language).format(value)

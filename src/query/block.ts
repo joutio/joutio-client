@@ -1,4 +1,7 @@
-import type { ChallengeView, MeView, PageResponse, PlayerCardView, PlayerProfileView, UserRefView } from '../api-types/index.js'
+import type { ChallengeView } from '../features/challenges/types.js'
+import type { MeView } from '../features/me/types.js'
+import type { PlayerCardView, PlayerProfileView, UserRefView } from '../features/profile/types.js'
+import type { PageResponse } from '../types/common.js'
 import type { InfiniteData, QueryClient, QueryKey } from '@tanstack/query-core'
 import { queryKeys } from './keys.js'
 
