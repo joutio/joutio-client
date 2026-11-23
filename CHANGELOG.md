@@ -1,3 +1,13 @@
+## [10.0.0](https://github.com/joutio/joutio-client/compare/v9.0.0...v10.0.0) (2026-11-23)
+
+### ⚠ BREAKING CHANGES
+
+* core/ split, two realtime primitives, native optimism and result rounds
+
+### Features
+
+* core/ split, two realtime primitives, native optimism and result rounds ([cecad0a](https://github.com/joutio/joutio-client/commit/cecad0a65e48d4d95cd6041397dc5e727a4316bd))
+
 ## [9.0.0](https://github.com/joutio/joutio-client/compare/v8.14.0...v9.0.0) (2026-11-22)
 
 ### ⚠ BREAKING CHANGES
