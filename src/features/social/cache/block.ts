@@ -1,14 +1,14 @@
-import type { ChallengeView } from '../features/challenges/types.js'
-import type { MeView } from '../features/me/types.js'
-import type { PlayerCardView, PlayerProfileView, UserRefView } from '../features/profile/types.js'
-import type { PageResponse } from '../types/common.js'
+import type { ChallengeView } from '../../challenges/types.js'
+import type { MeView } from '../../me/types.js'
+import type { PlayerCardView, PlayerProfileView, UserRefView } from '../../profile/types.js'
+import type { PageResponse } from '../../../core/types/common.js'
 import type { InfiniteData, QueryClient, QueryKey } from '@tanstack/query-core'
-import { queryKeys } from './keys.js'
+import { queryKeys } from '../../../core/query/keys.js'
 
 type Pages = InfiniteData<PageResponse<PlayerCardView>>
 type ContactsKey = ReturnType<typeof queryKeys.contacts.list>
 
-/** Vues touchées par un blocage, à passer à `optimisticUpdate` avant `applyBlock`. */
+/** Vues touchées par un blocage, relues (`invalidateQueries`) en cas d'échec de `applyBlock`. */
 export const blockKeys = (meId: string, userId: string): QueryKey[] => [
   queryKeys.profiles.profile(userId),
   queryKeys.profiles.profile(meId),

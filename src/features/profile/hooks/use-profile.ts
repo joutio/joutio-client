@@ -1,5 +1,5 @@
-import { keepPreviousData, skipToken, useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import type { HttpClient } from '../../../http.js'
+import { skipToken, useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import type { HttpClient } from '../../../core/http.js'
 import {
   getActivity,
   getBadges,
@@ -76,10 +76,11 @@ export function useHeadToHead(http: HttpClient, userId: string | undefined, agai
 /** Historique des parties d'un joueur, filtré et paginé. */
 export function useHistory(http: HttpClient, userId: string | undefined, filters: HistoryFilters) {
   return useInfiniteQuery({
-    queryKey: profileKeys.games(userId ?? '', filters),
+    queryKey: userId ? profileKeys.games(userId, filters) : ['profiles', null, 'games'],
     queryFn: userId ? ({ pageParam, signal }) => getHistoryPage(http, userId, filters, pageParam, signal) : skipToken,
     initialPageParam: 0,
     getNextPageParam: (last) => (last.last ? undefined : last.page + 1),
-    placeholderData: keepPreviousData,
+    placeholderData: (previous, previousQuery) =>
+      userId && previousQuery?.queryKey[1] === userId ? previous : undefined,
   })
 }

@@ -1,6 +1,6 @@
-import type { AbortSignalLike, HttpClient } from '../../../http.js'
-import { segment } from '../../../http.js'
-import type { IdResponse } from '../../../types/common.js'
+import type { AbortSignalLike, HttpClient } from '../../../core/http.js'
+import { segment } from '../../../core/http.js'
+import type { IdResponse } from '../../../core/types/common.js'
 import type { TeamMember } from '../types.js'
 import type { QuestionOperation } from '../domain/question-draft.js'
 import type {

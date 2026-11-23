@@ -1,7 +1,7 @@
-import type { AbortSignalLike, HttpClient } from '../../../http.js'
-import { segment } from '../../../http.js'
+import type { AbortSignalLike, HttpClient } from '../../../core/http.js'
+import { segment } from '../../../core/http.js'
 import type { MeView } from '../types.js'
-import type { Language } from '../../../types/common.js'
+import type { Language } from '../../../core/types/common.js'
 
 /** Commandes du compte connecté. */
 

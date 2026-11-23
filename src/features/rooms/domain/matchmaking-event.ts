@@ -1,10 +1,6 @@
 import type { RoomOpponentView } from '../../profile/types.js'
 
-/**
- * Contrat temps réel de l'**appariement public** (enveloppé par `EventEnvelopeResponse` en
- * REST d'historique comme en WebSocket) — miroir du `MatchmakingNotification` du BFF, renommé
- * `MatchmakingEvent` côté client.
- */
+/** Événements côté client (appariement public), miroir de `MatchmakingEventResponse` en REST et STOMP. */
 
 export type MatchmakingEventType = 'SEARCHING' | 'MATCHED' | 'CANCELLED' | 'EXPIRED' | 'FAILED'
 

@@ -1,5 +1,5 @@
-import type { AbortSignalLike, HttpClient } from '../../../http.js'
-import { segment } from '../../../http.js'
+import type { AbortSignalLike, HttpClient } from '../../../core/http.js'
+import { segment } from '../../../core/http.js'
 import type { AnswerQuestionCommand } from '../types.js'
 
 /** Réponse à la manche `round` (1 à 7) ; la manche rend le renvoi sûr, `clientElapsedMs` est borné par le serveur. */

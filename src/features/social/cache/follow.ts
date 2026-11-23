@@ -1,8 +1,9 @@
-import { cardOf } from '../features/social/services/contacts-query.service.js'
-import type { PageResponse } from '../types/common.js'
-import type { PeopleSort, PlayerCardView, PlayerProfileView } from '../features/profile/types.js'
+import type { MeView } from '../../me/types.js'
+import { cardOf } from '../domain/contact-card.js'
+import type { PageResponse } from '../../../core/types/common.js'
+import type { PeopleSort, PlayerCardView, PlayerProfileView } from '../../profile/types.js'
 import type { InfiniteData, QueryClient } from '@tanstack/query-core'
-import { queryKeys } from './keys.js'
+import { queryKeys } from '../../../core/query/keys.js'
 
 type Pages = InfiniteData<PageResponse<PlayerCardView>>
 type ContactsKey = ReturnType<typeof queryKeys.contacts.list>
@@ -65,4 +66,26 @@ export function applyFollow(client: QueryClient, meId: string, profile: PlayerPr
     }
     client.setQueryData(key, next)
   }
+}
+
+export const followKeys = (meId: string, userId: string) => [
+  queryKeys.profiles.profile(userId),
+  queryKeys.profiles.profile(meId),
+  queryKeys.me(),
+  queryKeys.contacts.all(),
+]
+
+export function applyPlayerFollow(client: QueryClient, meId: string, userId: string, follow: boolean) {
+  const key = queryKeys.profiles.profile(userId)
+  const profile = client.getQueryData<PlayerProfileView>(key)
+  const delta = profile?.following === follow ? 0 : follow ? 1 : -1
+  if (profile) {
+    const updated = { ...profile, following: follow, followersCount: Math.max(0, profile.followersCount + delta) }
+    client.setQueryData(key, updated)
+    applyFollow(client, meId, updated, follow)
+  }
+  const updateCount = <T extends { followingCount: number }>(current: T | undefined) =>
+    current ? { ...current, followingCount: Math.max(0, current.followingCount + delta) } : current
+  client.setQueryData<MeView>(queryKeys.me(), updateCount)
+  client.setQueryData<PlayerProfileView>(queryKeys.profiles.profile(meId), updateCount)
 }

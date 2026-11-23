@@ -88,35 +88,40 @@
       "import": "./dist/features/onboarding/index.js",
       "default": "./dist/features/onboarding/index.js"
     },
-    "./types": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/types/index.js",
-      "default": "./dist/types/index.js"
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js",
+      "default": "./dist/core/index.js"
     },
-    "./geo": {
-      "types": "./dist/geo/index.d.ts",
-      "import": "./dist/geo/index.js",
-      "default": "./dist/geo/index.js"
+    "./core/types": {
+      "types": "./dist/core/types/index.d.ts",
+      "import": "./dist/core/types/index.js",
+      "default": "./dist/core/types/index.js"
     },
-    "./share": {
-      "types": "./dist/share/index.d.ts",
-      "import": "./dist/share/index.js",
-      "default": "./dist/share/index.js"
+    "./core/geo": {
+      "types": "./dist/core/geo/index.d.ts",
+      "import": "./dist/core/geo/index.js",
+      "default": "./dist/core/geo/index.js"
     },
-    "./i18n": {
-      "types": "./dist/i18n/index.d.ts",
-      "import": "./dist/i18n/index.js",
-      "default": "./dist/i18n/index.js"
+    "./core/share": {
+      "types": "./dist/core/share/index.d.ts",
+      "import": "./dist/core/share/index.js",
+      "default": "./dist/core/share/index.js"
     },
-    "./query": {
-      "types": "./dist/query/index.d.ts",
-      "import": "./dist/query/index.js",
-      "default": "./dist/query/index.js"
+    "./core/i18n": {
+      "types": "./dist/core/i18n/index.d.ts",
+      "import": "./dist/core/i18n/index.js",
+      "default": "./dist/core/i18n/index.js"
     },
-    "./realtime": {
-      "types": "./dist/realtime/index.d.ts",
-      "import": "./dist/realtime/index.js",
-      "default": "./dist/realtime/index.js"
+    "./core/query": {
+      "types": "./dist/core/query/index.d.ts",
+      "import": "./dist/core/query/index.js",
+      "default": "./dist/core/query/index.js"
+    },
+    "./core/realtime": {
+      "types": "./dist/core/realtime/index.d.ts",
+      "import": "./dist/core/realtime/index.js",
+      "default": "./dist/core/realtime/index.js"
     }
   },
   "scripts": {

@@ -1,5 +1,5 @@
-import type { AbortSignalLike, HttpClient } from '../../../http.js'
-import { segment } from '../../../http.js'
+import type { AbortSignalLike, HttpClient } from '../../../core/http.js'
+import { segment } from '../../../core/http.js'
 import type { NotificationCategory } from '../types.js'
 
 /** Commandes de la boîte de réception et des préférences. */

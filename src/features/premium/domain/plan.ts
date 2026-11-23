@@ -1,4 +1,4 @@
-import type { ApiError } from '../../../types/common.js'
+import type { ApiError } from '../../../core/types/common.js'
 import type { MeView } from '../../me/types.js'
 import type { PlanLimitsView } from '../types.js'
 import { CREATION_LIMITS } from '../../authoring/domain/limits.js'

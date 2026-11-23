@@ -1,8 +1,4 @@
-/**
- * Contrat temps réel d'une **salle** (enveloppé par `EventEnvelopeResponse` en REST
- * d'historique comme en WebSocket) — miroir du `RoomNotification` du BFF, renommé `RoomEvent`
- * côté client : ce sont des événements du bus, pas des notifications d'inbox.
- */
+/** Événements côté client (salle), miroir de `RoomEventResponse` en REST et STOMP. */
 
 export type RoomEventType =
   | 'ROOM_CREATED'

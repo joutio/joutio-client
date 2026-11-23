@@ -1,4 +1,4 @@
-import type { AbortSignalLike, HttpClient } from '../../../http.js'
+import type { AbortSignalLike, HttpClient } from '../../../core/http.js'
 import type { TopicCardView } from '../../topics/types.js'
 
 /** Endpoints de l'entrée dans l'app. */

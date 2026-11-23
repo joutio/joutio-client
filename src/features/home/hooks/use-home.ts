@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { HttpClient } from '../../../http.js'
+import type { HttpClient } from '../../../core/http.js'
 import { getHome } from '../services/home-query.service.js'
 
 /** Clés React Query de l'accueil, exportées pour les écritures transversales (`queryKeys`). */

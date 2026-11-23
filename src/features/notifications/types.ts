@@ -26,3 +26,8 @@ export interface NotificationView {
   readAt: string | null
   createdAt: string
 }
+
+/** Événement reçu sur le flux de l'inbox personnelle. */
+export type PersonalNotificationEvent =
+  | { type: 'created'; notification: NotificationView }
+  | { type: 'deleted'; notificationId: string }

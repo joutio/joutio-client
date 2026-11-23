@@ -1,4 +1,4 @@
-import type { Language } from '../../../types/common.js'
+import type { Language } from '../../../core/types/common.js'
 import { contentFor } from '../authoring.js'
 import { QUESTION_CHOICES, type CreateQuestionInput, type QuestionAnswer, type QuestionChoice, type QuestionEditorView } from '../types.js'
 

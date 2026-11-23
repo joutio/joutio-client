@@ -1,4 +1,4 @@
-import type { AbortSignalLike, HttpClient } from '../../../http.js'
+import type { AbortSignalLike, HttpClient } from '../../../core/http.js'
 import type { ChallengeView } from '../types.js'
 
 /** Endpoints des défis nominatifs. */

@@ -24,5 +24,5 @@ export function useEventStream<T, S>(options: EventStreamOptions<T, S> | null) {
   const noop = () => () => undefined
   const state = useSyncExternalStore(stream?.subscribe ?? noop, () => stream?.getSnapshot() ?? null)
   const status = useSyncExternalStore(stream?.subscribe ?? noop, () => stream?.getStatus() ?? null)
-  return { state, status, refresh: () => stream?.refresh() }
+  return { state, status }
 }

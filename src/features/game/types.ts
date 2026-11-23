@@ -102,6 +102,26 @@ export interface GameResultReward {
 }
 
 /**
+ * Manche rejouable de l'écran résultat, dans l'ordre autoritaire du serveur (manches closes).
+ * La question est un snapshot figé au moment de la partie (réponses, traductions, image).
+ */
+export interface GameResultRoundView {
+  /** Nom de la manche (`ROUND_1`…`ROUND_7`). */
+  round: string
+  questionText: string
+  answers: Record<string, string>
+  translations: Record<string, RoundQuestionTranslation>
+  imageUrl: string | null
+  imageAlt: string | null
+  bonus: boolean
+  correctAnswer: string | null
+  /** Réponse du joueur demandeur (null : non répondu, forfait). */
+  myAnswer: PlayerAnswer | null
+  /** Réponse de l'adversaire (null : bot, absent, forfait). */
+  opponentAnswer: PlayerAnswer | null
+}
+
+/**
  * Vue de résultat d'un duel (`GET /api/games/{gameId}/result`) : bilan autoritaire de la partie,
  * progression du joueur après récompense et enrichissements (sujet + adversaire) pour la page
  * résultat. `reward` arrive après la projection (poll court).
@@ -150,4 +170,6 @@ export interface GameResultView {
    * la projection ne les a pas écrits : l'achievement STOMP portant ce `gameId` fait relire le résultat.
    */
   badges: BadgeView[]
+  /** Manches closes dans l'ordre, avec le snapshot de question (revue des manches). */
+  rounds: GameResultRoundView[]
 }

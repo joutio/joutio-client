@@ -1,4 +1,4 @@
-import type { Language } from '../../types/common.js'
+import type { Language } from '../../core/types/common.js'
 import { QUESTION_CHOICES } from './types.js'
 import type {
   QuestionContent,

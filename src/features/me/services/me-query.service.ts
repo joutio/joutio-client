@@ -1,4 +1,4 @@
-import type { AbortSignalLike, HttpClient } from '../../../http.js'
+import type { AbortSignalLike, HttpClient } from '../../../core/http.js'
 import type { MeView } from '../types.js'
 import type { PseudonymAvailability, RewardsView, UserRefView } from '../../profile/types.js'
 

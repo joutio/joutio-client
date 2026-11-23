@@ -1,6 +1,6 @@
-import type { AbortSignalLike, HttpClient } from '../../../http.js'
-import { segment } from '../../../http.js'
-import type { EventEnvelope } from '../../../realtime/stream.js'
+import type { AbortSignalLike, HttpClient } from '../../../core/http.js'
+import { segment } from '../../../core/http.js'
+import type { EventEnvelope } from '../../../core/realtime/stream.js'
 import type { GameEvent } from '../domain/game-event.js'
 import type { ActiveGameView, GameResultView } from '../types.js'
 
@@ -19,6 +19,6 @@ export async function getGameResult(http: HttpClient, gameId: string, signal?: A
 }
 
 /** Historique des événements d'une partie (rejeu REST du stream). */
-export async function getGameEvents(http: HttpClient, gameId: string): Promise<EventEnvelope<GameEvent>[]> {
-  return http.get<EventEnvelope<GameEvent>[]>(`/api/games/${segment(gameId)}/notifications`)
+export async function getGameEvents(http: HttpClient, gameId: string, signal?: AbortSignalLike): Promise<EventEnvelope<GameEvent>[]> {
+  return http.get<EventEnvelope<GameEvent>[]>(`/api/games/${segment(gameId)}/events`, { signal })
 }

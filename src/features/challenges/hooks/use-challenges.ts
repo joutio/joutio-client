@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { HttpClient } from '../../../http.js'
+import type { HttpClient } from '../../../core/http.js'
 import { getChallenges } from '../services/challenges-query.service.js'
 
 /** Clés React Query des défis, exportées pour les écritures transversales (`queryKeys`). */

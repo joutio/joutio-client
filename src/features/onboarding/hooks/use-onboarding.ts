@@ -1,5 +1,5 @@
 import { skipToken, useQuery } from '@tanstack/react-query'
-import type { HttpClient } from '../../../http.js'
+import type { HttpClient } from '../../../core/http.js'
 import { getRecommendations } from '../services/onboarding-query.service.js'
 
 /** Clés React Query de l'entrée dans l'app, exportées pour les écritures transversales (`queryKeys`). */

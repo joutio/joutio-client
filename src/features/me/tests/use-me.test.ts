@@ -4,7 +4,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { createElement } from 'react'
 import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import type { HttpClient } from '../../../http.js'
+import type { HttpClient } from '../../../core/http.js'
 import type { MeView } from '../types.js'
 import { useMe, useMyId, useIsPremium, usePseudonymAvailability } from '../hooks/use-me.js'
 

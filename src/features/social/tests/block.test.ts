@@ -1,11 +1,11 @@
-import type { ChallengeView } from '../../features/challenges/types.js'
-import type { MeView } from '../../features/me/types.js'
-import type { PlayerCardView, PlayerProfileView, UserRefView } from '../../features/profile/types.js'
-import type { PageResponse } from '../../types/common.js'
+import type { ChallengeView } from '../../challenges/types.js'
+import type { MeView } from '../../me/types.js'
+import type { PlayerCardView, PlayerProfileView, UserRefView } from '../../profile/types.js'
+import type { PageResponse } from '../../../core/types/common.js'
 import { QueryClient, type InfiniteData } from '@tanstack/query-core'
 import { describe, expect, it } from 'vitest'
-import { applyBlock } from '../block.js'
-import { queryKeys } from '../keys.js'
+import { applyBlock } from '../cache/block.js'
+import { queryKeys } from '../../../core/query/keys.js'
 
 const ME = 'me'
 const card = (userId: string): PlayerCardView => ({ userId, pseudonym: userId, avatarOptions: null, rating: 1000, following: true, presence: null, suspended: false, premium: false })

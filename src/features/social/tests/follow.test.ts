@@ -1,9 +1,9 @@
-import type { PlayerCardView, PlayerProfileView } from '../../features/profile/types.js'
-import type { PageResponse } from '../../types/common.js'
+import type { PlayerCardView, PlayerProfileView } from '../../profile/types.js'
+import type { PageResponse } from '../../../core/types/common.js'
 import { QueryClient, type InfiniteData } from '@tanstack/query-core'
 import { describe, expect, it } from 'vitest'
-import { queryKeys } from '../keys.js'
-import { applyFollow } from '../follow.js'
+import { queryKeys } from '../../../core/query/keys.js'
+import { applyFollow } from '../cache/follow.js'
 
 const ME = 'me'
 const card = (userId: string, pseudonym: string, rating = 1000): PlayerCardView => ({

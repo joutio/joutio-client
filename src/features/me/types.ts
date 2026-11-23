@@ -1,4 +1,4 @@
-import type { Language } from '../../types/common.js'
+import type { Language } from '../../core/types/common.js'
 import type { DuelStatsView, ProgressionView } from '../profile/types.js'
 import type { PlanLimitsView, PremiumSource } from '../premium/types.js'
 

@@ -1,4 +1,4 @@
-import type { Language } from '../../types/common.js'
+import type { Language } from '../../core/types/common.js'
 
 /** Motifs de signalement d'un joueur (surface BFF). */
 export type UserReportReason = 'HARASSMENT' | 'HATE_SPEECH' | 'INAPPROPRIATE_CONTENT' | 'CHEATING' | 'SPAM' | 'OTHER'
@@ -171,7 +171,7 @@ export interface CreateTopicCommand {
 
 /** `PUT /api/topics/{id}/name`. */
 export interface UpdateTopicNameCommand {
-  language: import('../../types/common.js').Language
+  language: import('../../core/types/common.js').Language
   name: string
 }
 

@@ -1,6 +1,6 @@
-import type { HttpClient } from '../../../http.js'
-import type { RealtimeTransport } from '../../../realtime/transport.js'
-import { useEventStream } from '../../../realtime/use-stream.js'
+import type { HttpClient } from '../../../core/http.js'
+import type { RealtimeTransport } from '../../../core/realtime/transport.js'
+import { useEventStream } from '../../../core/realtime/use-stream.js'
 import { Room } from '../domain/room.js'
 import { Matchmaking } from '../domain/matchmaking.js'
 import type { RoomEvent } from '../domain/room-event.js'
@@ -22,8 +22,6 @@ export function useRoomStream(http: HttpClient, subscribe: RealtimeTransport['su
             load: () => getRoomEvents(http, roomId),
             subscribe: (onFrame, onConnect) => subscribe(`/topic/rooms/${roomId}`, (message) => onFrame(message.body), onConnect),
           },
-          // Salle fraîchement créée : la projection peut avoir quelques centaines de ms de retard.
-          notFoundGraceMs: 5_000,
         }
       : null,
   )
@@ -44,7 +42,6 @@ export function useMatchmakingStream(http: HttpClient, subscribe: RealtimeTransp
             load: () => getMatchmakingEvents(http, ticketId),
             subscribe: (onFrame, onConnect) => subscribe(`/topic/matchmaking/tickets/${ticketId}`, (message) => onFrame(message.body), onConnect),
           },
-          notFoundGraceMs: 5_000,
         }
       : null,
   )

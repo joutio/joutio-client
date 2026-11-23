@@ -1,6 +1,6 @@
-import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import type { HttpClient } from '../../../http.js'
-import { getNotificationPreferences, getNotificationsPage, getUnreadCount } from '../services/notifications-query.service.js'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import type { HttpClient } from '../../../core/http.js'
+import { getNotificationPreferences, getNotificationsPage, NOTIFICATIONS_PAGE_SIZE, getUnreadCount } from '../services/notifications-query.service.js'
 
 /** Clés React Query des notifications, exportées pour les écritures transversales (`queryKeys`). */
 export const notificationsKeys = {
@@ -31,6 +31,7 @@ export function useNotifications(http: HttpClient) {
     queryFn: ({ pageParam, signal }) => getNotificationsPage(http, pageParam, signal),
     initialPageParam: 0,
     getNextPageParam: (last) => (last.last ? undefined : last.page + 1),
-    placeholderData: keepPreviousData,
+    staleTime: 15_000,
+    meta: { pageSize: NOTIFICATIONS_PAGE_SIZE },
   })
 }

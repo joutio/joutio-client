@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { MessageKey } from '../../../i18n/translate.js'
+import type { MessageKey } from '../../../core/i18n/translate.js'
 import { MAX_BIO, pseudonymSchema } from '../../profile/schema/profile.schema.js'
 
 /** Code à usage unique reçu par e-mail (connexion, suppression du compte) : chiffres, longueur fixe. */

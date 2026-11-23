@@ -1,5 +1,5 @@
 import { skipToken, useQuery } from '@tanstack/react-query'
-import type { HttpClient } from '../../../http.js'
+import type { HttpClient } from '../../../core/http.js'
 import { getMyRooms, getRoom } from '../services/rooms-query.service.js'
 
 /** Clés React Query des salles, exportées pour les écritures transversales (`queryKeys`). */

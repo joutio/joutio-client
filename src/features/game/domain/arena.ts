@@ -9,8 +9,8 @@ import {
   isBonusRound,
 } from './game-constants.js'
 import { answerDeadlineMs } from './round.js'
-import type { Game } from './game.js'
-import type { GameRoundState } from '../types.js'
+
+import type { GameRoundState, GameState } from '../types.js'
 
 /**
  * Scène courante de l'arène, dérivée **exclusivement** des instants serveur portés par le
@@ -76,7 +76,7 @@ function roundNumberOf(round: string): number {
 }
 
 /** Rounds triés par numéro (l'ordre d'insertion du fold n'est pas garanti). */
-function sortedRounds(game: Game): GameRoundState[] {
+function sortedRounds(game: GameState): GameRoundState[] {
   return Object.values(game.rounds).sort((a, b) => roundNumberOf(a.round) - roundNumberOf(b.round))
 }
 
@@ -84,7 +84,7 @@ function sortedRounds(game: Game): GameRoundState[] {
  * Construit la liste ordonnée des fenêtres de phase. Chaque fenêtre s'appuie sur des instants
  * absolus : aucune durée locale n'est utilisée pour décider d'une transition.
  */
-function buildWindows(game: Game): PhaseWindow[] {
+function buildWindows(game: GameState): PhaseWindow[] {
   const windows: PhaseWindow[] = []
   const rounds = sortedRounds(game)
   const firstRoundAt = instantToMillis(game.firstRoundAt)
@@ -194,7 +194,7 @@ function clamp(value: number, min: number, max: number): number {
  *
  * @param graceMs tolérance avant de signaler `overdue` (transition serveur manquée).
  */
-function sceneAt(game: Game, now: number, graceMs: number = TRANSITION_GRACE_MS): ArenaScene {
+function sceneAt(game: GameState, now: number, graceMs: number = TRANSITION_GRACE_MS): ArenaScene {
   const rounds = sortedRounds(game)
   const last = rounds[rounds.length - 1] ?? null
   const lastClosedAt = instantToMillis(last?.closedAt)
@@ -314,9 +314,9 @@ function revealScene(round: GameRoundState, index: number, now: number, overdue 
  * temps, ce modèle ne fait que dériver ses instants.
  */
 export class Arena {
-  private readonly game: Game
+  private readonly game: GameState
 
-  constructor(game: Game) {
+  constructor(game: GameState) {
     this.game = game
   }
 

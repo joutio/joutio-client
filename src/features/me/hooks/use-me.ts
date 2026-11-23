@@ -1,5 +1,5 @@
-import { skipToken, useQuery } from '@tanstack/react-query'
-import type { HttpClient } from '../../../http.js'
+import { queryOptions, skipToken, useQuery } from '@tanstack/react-query'
+import type { HttpClient } from '../../../core/http.js'
 import type { MeView } from '../types.js'
 import { checkPseudonymAvailability, getBlockedPlayers, getMe, getRewards } from '../services/me-query.service.js'
 
@@ -14,9 +14,13 @@ export const meKeys = {
   blockedPlayers: () => ['me', 'blocked'] as const,
 }
 
+function meOptions(http: HttpClient) {
+  return queryOptions({ queryKey: meKeys.me(), queryFn: ({ signal }) => getMe(http, signal) })
+}
+
 /** Le compte connecté : identité, préférences, progression. */
 export function useMe(http: HttpClient) {
-  return useQuery({ queryKey: meKeys.me(), queryFn: ({ signal }) => getMe(http, signal) })
+  return useQuery(meOptions(http))
 }
 
 const selectUserId = (me: MeView) => me.userId
@@ -26,22 +30,22 @@ const selectLanguage = (me: MeView) => me.language
 
 /** `userId` seul : un composant qui n'a besoin que de l'identité ne se rend pas quand le reste de `MeView` change. */
 export function useMyId(http: HttpClient) {
-  return useQuery({ queryKey: meKeys.me(), queryFn: ({ signal }) => getMe(http, signal), select: selectUserId })
+  return useQuery({ ...meOptions(http), select: selectUserId })
 }
 
 /** Droit Premium effectif, seul. */
 export function useIsPremium(http: HttpClient) {
-  return useQuery({ queryKey: meKeys.me(), queryFn: ({ signal }) => getMe(http, signal), select: selectPremium })
+  return useQuery({ ...meOptions(http), select: selectPremium })
 }
 
 /** Options d'avatar, seules. */
 export function useMyAvatarOptions(http: HttpClient) {
-  return useQuery({ queryKey: meKeys.me(), queryFn: ({ signal }) => getMe(http, signal), select: selectAvatarOptions })
+  return useQuery({ ...meOptions(http), select: selectAvatarOptions })
 }
 
 /** Langue du compte, seule. */
 export function useMyLanguage(http: HttpClient) {
-  return useQuery({ queryKey: meKeys.me(), queryFn: ({ signal }) => getMe(http, signal), select: selectLanguage })
+  return useQuery({ ...meOptions(http), select: selectLanguage })
 }
 
 /** Catalogue des récompenses (styles d'avatar). */

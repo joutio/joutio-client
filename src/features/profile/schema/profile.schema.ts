@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { MessageKey } from '../../../i18n/translate.js'
+import type { MessageKey } from '../../../core/i18n/translate.js'
 import { birthDateIssue } from '../domain/age.js'
 import { pseudonymIssue, type PseudonymIssue } from '../domain/pseudonym.js'
 

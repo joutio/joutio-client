@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { MessageKey } from '../../../i18n/translate.js'
+import type { MessageKey } from '../../../core/i18n/translate.js'
 import { MAX_DESCRIPTION } from '../domain/description.js'
 import { MAX_NAME, MAX_REJECT } from '../domain/limits.js'
 import { isReady, type QuestionDraft } from '../domain/question-draft.js'

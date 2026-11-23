@@ -1,9 +1,4 @@
-/**
- * Contrat temps réel d'une **partie** (enveloppé par `EventEnvelopeResponse` en REST
- * d'historique comme en WebSocket) — miroir du `GameNotification` du BFF, renommé `GameEvent`
- * côté client : ce sont des événements du bus, à ne pas confondre avec les notifications de
- * l'inbox (`features/notifications`).
- */
+/** Événements côté client (partie), miroir de `GameEventResponse` en REST et STOMP. */
 
 export type GameEventType =
   | 'GAME_CREATED'

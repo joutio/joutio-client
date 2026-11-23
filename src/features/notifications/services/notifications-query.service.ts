@@ -1,5 +1,5 @@
-import type { AbortSignalLike, HttpClient } from '../../../http.js'
-import type { PageResponse } from '../../../types/common.js'
+import type { AbortSignalLike, HttpClient } from '../../../core/http.js'
+import type { PageResponse } from '../../../core/types/common.js'
 import type { NotificationPreferenceView, NotificationView, UnreadCountView } from '../types.js'
 
 export const NOTIFICATIONS_PAGE_SIZE = 10

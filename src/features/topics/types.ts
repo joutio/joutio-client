@@ -1,5 +1,5 @@
 import type { MasteryTier } from '../profile/types.js'
-import type { PageResponse } from '../../types/common.js'
+import type { PageResponse } from '../../core/types/common.js'
 
 /** Noms d'un sujet par langue (`fr` requis, `en` facultatif). */
 export type TopicNames = Record<string, string>

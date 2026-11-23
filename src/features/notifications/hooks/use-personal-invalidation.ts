@@ -1,11 +1,10 @@
-import type { AchievementView } from '../features/profile/types.js'
-import type { NotificationView } from '../features/notifications/types.js'
+import type { AchievementView } from '../../profile/types.js'
+import type { NotificationView } from '../types.js'
 import { useQueryClient, type QueryKey } from '@tanstack/react-query'
-import { useEffect } from 'react'
-import type { HttpClient } from '../http.js'
-import { useMyId } from '../features/me/hooks/use-me.js'
-import { queryKeys } from '../query/keys.js'
-import type { RealtimeTransport } from './transport.js'
+import { queryKeys } from '../../../core/query/keys.js'
+import type { RealtimeTransport } from '../../../core/realtime/transport.js'
+import { useSubscription } from '../../../core/realtime/use-subscription.js'
+import { usePersonalNotifications } from './use-personal-notifications.js'
 
 /**
  * Vues relues quand le serveur pousse un événement **d'un autre acteur** sur le flux personnel (2026-11-16, unifié
@@ -48,53 +47,37 @@ const PERSONAL: Record<NotificationView['type'], (notification: NotificationView
 /** Vues relues après une **re**connexion (retour au premier plan) : le flux personnel n'a pas d'historique. */
 const RESYNC = (): QueryKey[] => [queryKeys.me(), queryKeys.notifications.all(), queryKeys.challenges(), queryKeys.myRooms(), queryKeys.authoring.todo()]
 
-interface Envelope {
-  eventType?: string
-  payload?: NotificationView
+function parseAchievement(body: string): AchievementView | undefined {
+  try {
+    return JSON.parse(body) as AchievementView
+  } catch {
+    return undefined
+  }
 }
 
-/**
- * Monté une fois dans l'app connectée : souscrit au flux personnel et à celui des déblocages, et invalide les vues
- * que chaque événement rend périmées. `http` et `subscribe` sont fournis par l'app (comme `HttpClient`).
- */
-export function usePersonalInvalidation(http: HttpClient, subscribe: RealtimeTransport['subscribe']) {
+/** Synchronise les vues concernées par l'inbox personnelle et les récompenses. */
+export function usePersonalInvalidation(subscribe: RealtimeTransport['subscribe'], userId: string | undefined) {
   const client = useQueryClient()
-  const userId = useMyId(http).data
+  const invalidate = (keys: readonly QueryKey[]) => keys.forEach((queryKey) => void client.invalidateQueries({ queryKey }))
 
-  useEffect(() => {
-    if (!userId) return
-    const invalidate = (keys: readonly QueryKey[]) => keys.forEach((queryKey) => void client.invalidateQueries({ queryKey }))
-    let connected = false
-
-    const offPersonal = subscribe(
-      `/topic/notifications/${userId}`,
-      (message) => {
-        let envelope: Envelope
-        try {
-          envelope = JSON.parse(message.body) as Envelope
-        } catch {
-          return
-        }
-        const notification = envelope.payload
-        if (!notification?.notificationId) return
-        // Créée ou supprimée ailleurs : la boîte et la cloche suivent.
-        invalidate([queryKeys.notifications.all()])
-        if (envelope.eventType === 'NOTIFICATION_DELETED') return
-        invalidate(PERSONAL[notification.type]?.(notification) ?? [])
-      },
-      () => {
-        if (connected) invalidate(RESYNC())
-        connected = true
-      },
-    )
-
-    const offAchievements = subscribe(`/topic/achievements/${userId}`, (message) => {
-      let achievement: AchievementView
-      try {
-        achievement = JSON.parse(message.body) as AchievementView
-      } catch {
-        return
+  usePersonalNotifications(
+    subscribe,
+    userId,
+    (event) => {
+      void client.invalidateQueries({ queryKey: queryKeys.notifications.all() })
+      if (event.type === 'created') {
+        PERSONAL[event.notification.type]?.(event.notification).forEach((queryKey) => void client.invalidateQueries({ queryKey }))
       }
+    },
+    () => RESYNC().forEach((queryKey) => void client.invalidateQueries({ queryKey })),
+  )
+
+  useSubscription(
+    subscribe,
+    userId ? `/topic/achievements/${userId}` : undefined,
+    parseAchievement,
+    (achievement) => {
+      if (!userId) return
       // Badge ou titre débloqué : profil, collection, titres, récompenses ; maîtrise du sujet pour un titre ; résultat
       // de la partie pour un badge de duel (séquence des badges, projection parfois en retard sur le résultat).
       invalidate([
@@ -104,13 +87,6 @@ export function usePersonalInvalidation(http: HttpClient, subscribe: RealtimeTra
         ...(achievement.kind === 'TITLE' && achievement.topicId ? [queryKeys.topic.all(achievement.topicId)] : []),
         ...(achievement.kind === 'BADGE' && achievement.gameId ? [queryKeys.games.result(achievement.gameId)] : []),
       ])
-    })
-
-    return () => {
-      offPersonal()
-      offAchievements()
-    }
-  }, [client, subscribe, userId])
-
-  return null
+    },
+  )
 }

@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { renderHook, act } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import type { NotificationView } from '../../features/notifications/types.js'
-import { usePersonalNotifications, useRoomPresenceEvents } from '../use-personal-feed.js'
-import type { RealtimeTransport } from '../transport.js'
+import type { RealtimeTransport } from '../../../core/realtime/transport.js'
+import type { NotificationView } from '../types.js'
+import { usePersonalNotifications } from '../hooks/use-personal-notifications.js'
 
 /** Transport de test : destinations souscrites, avec déclenchement manuel de trames et de reconnexions. */
 const transport = () => {
@@ -38,9 +38,9 @@ describe('usePersonalNotifications', () => {
     renderHook(() => usePersonalNotifications(subscribe, 'u1', handler))
     expect(subscribe).toHaveBeenCalledWith('/topic/notifications/u1', expect.any(Function), undefined)
     act(() => push('/topic/notifications/u1', JSON.stringify({ eventType: 'FOLLOW', payload: notification })))
-    expect(handler).toHaveBeenCalledWith(notification, false)
-    act(() => push('/topic/notifications/u1', JSON.stringify({ eventType: 'NOTIFICATION_DELETED', payload: notification })))
-    expect(handler).toHaveBeenLastCalledWith(notification, true)
+    expect(handler).toHaveBeenCalledWith({ type: 'created', notification })
+    act(() => push('/topic/notifications/u1', JSON.stringify({ eventType: 'NOTIFICATION_DELETED', payload: { notificationId: 'n1' } })))
+    expect(handler).toHaveBeenLastCalledWith({ type: 'deleted', notificationId: 'n1' })
     expect(count()).toBe(1)
   })
 
@@ -64,15 +64,5 @@ describe('usePersonalNotifications', () => {
     expect(onResync).not.toHaveBeenCalled()
     act(() => reconnect('/topic/notifications/u1'))
     expect(onResync).toHaveBeenCalledTimes(1)
-  })
-})
-
-describe('useRoomPresenceEvents', () => {
-  it('forwards ROOM_PRESENCE frames with a roomId', () => {
-    const { subscribe, push } = transport()
-    const handler = vi.fn()
-    renderHook(() => useRoomPresenceEvents(subscribe, 'u1', handler))
-    act(() => push('/topic/notifications/u1', JSON.stringify({ eventType: 'ROOM_PRESENCE', payload: { roomId: 'r1' } })))
-    expect(handler).toHaveBeenCalledWith({ roomId: 'r1' })
   })
 })

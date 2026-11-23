@@ -1,5 +1,5 @@
 import { keepPreviousData, skipToken, useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import type { HttpClient } from '../../../http.js'
+import type { HttpClient } from '../../../core/http.js'
 import {
   getCataloguePage,
   getFacets,
