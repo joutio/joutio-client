@@ -13,7 +13,9 @@ function parts(iso: string): [number, number, number] | null {
   if (!match) return null
   const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])]
   const date = new Date(Date.UTC(year, month - 1, day))
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day ? [year, month, day] : null
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+    ? [year, month, day]
+    : null
 }
 
 /** Âge révolu au jour `today` ; un né un 29 février a un an de plus le 28 février des années non bissextiles. */

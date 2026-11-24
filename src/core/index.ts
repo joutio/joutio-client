@@ -1,5 +1,7 @@
-export type { HttpClient } from './http.js'
+export type { AbortSignalLike, HttpClient, HttpQuery } from './http.js'
+export { segment } from './http.js'
 export * from './ids.js'
+export * from './runtime/context.js'
 export * from './query/index.js'
 export * from './realtime/index.js'
 export * from './geo/index.js'

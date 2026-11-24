@@ -1,24 +1,33 @@
-import { skipToken, useInfiniteQuery } from '@tanstack/react-query'
+import { infiniteQueryOptions, skipToken, useInfiniteQuery } from '@tanstack/react-query'
 import type { HttpClient } from '../../../core/http.js'
-import type { PeopleSort } from '../../profile/types.js'
+import { keepPreviousWhen, MAX_PAGES, nextPage } from '../../../core/query/pages.js'
+import { useJoutio } from '../../../core/runtime/context.js'
 import { getContactsPage } from '../services/contacts-query.service.js'
-import type { ContactDirection } from '../types.js'
+import type { ContactsList } from '../types.js'
+import { contactKeys } from '../query/keys.js'
 
-/** Clés React Query des listes de personnes, exportées pour les écritures transversales (`queryKeys`). */
-export const contactsKeys = {
-  /** Toutes les listes d'abonnements / abonnés (préfixe). */
-  all: () => ['contacts'] as const,
-  list: (userId: string, direction: ContactDirection, query: string, sort: PeopleSort) => ['contacts', userId, direction, query, sort] as const,
+export const contactQueries = {
+  /** Un changement de recherche ou de tri garde la liste du même joueur et du même sens affichée. */
+  list: (http: HttpClient, list: ContactsList) => {
+    const { userId, direction, query, sort } = list
+    return infiniteQueryOptions({
+      queryKey: contactKeys.list({ userId, direction, query, sort }),
+      queryFn: userId
+        ? ({ pageParam, signal }) => getContactsPage(http, userId, direction, query, sort, pageParam, signal)
+        : skipToken,
+      initialPageParam: 0,
+      getNextPageParam: nextPage,
+      maxPages: MAX_PAGES,
+      placeholderData: keepPreviousWhen((key: readonly unknown[]) => {
+        const previous = contactKeys.listOf(key)
+        return userId !== undefined && previous.userId === userId && previous.direction === direction
+      }),
+    })
+  },
 }
 
 /** Abonnements ou abonnés d'un joueur, par recherche et tri, paginés. */
-export function useContacts(http: HttpClient, userId: string | undefined, direction: ContactDirection, query: string, sort: PeopleSort) {
-  return useInfiniteQuery({
-    queryKey: userId ? contactsKeys.list(userId, direction, query, sort) : ['contacts', null],
-    queryFn: userId ? ({ pageParam, signal }) => getContactsPage(http, userId, direction, query, sort, pageParam, signal) : skipToken,
-    initialPageParam: 0,
-    getNextPageParam: (last) => (last.last ? undefined : last.page + 1),
-    placeholderData: (previous, previousQuery) =>
-      userId && previousQuery?.queryKey[1] === userId && previousQuery.queryKey[2] === direction ? previous : undefined,
-  })
+export function useContacts(list: ContactsList) {
+  const { http } = useJoutio()
+  return useInfiniteQuery(contactQueries.list(http, list))
 }

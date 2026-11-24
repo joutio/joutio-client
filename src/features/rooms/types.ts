@@ -1,8 +1,12 @@
 import type { RoomOpponentView } from '../profile/types.js'
 import type { TopicRefView } from '../topics/types.js'
 
-/** Statut serveur d'une salle (enum backend `RoomStatus`) : cycle de vie + avancement de la préparation. */
+/**
+ * Statut serveur d'une salle (enum backend `RoomStatus`) : invitation, attente, avancement de la préparation, fin. Un
+ * défi est une salle `INVITED` (l'invité accepte ou refuse).
+ */
 export type RoomStatus =
+  | 'INVITED'
   | 'WAITING_PLAYERS'
   | 'FETCHING_PLAYERS'
   | 'FETCHING_PLAYED_QUESTIONS'
@@ -10,39 +14,79 @@ export type RoomStatus =
   | 'CREATING_GAME'
   | 'GAME_CREATED'
   | 'COMPLETED'
+  | 'DECLINED'
   | 'CANCELLED'
   | 'EXPIRED'
   | 'FAILED'
 
-/** Origine d'une salle, fixée à sa création (`RoomOrigin` de matchmaking). */
+/**
+ * Origine d'une salle, fixée à sa création (`RoomOrigin` de matchmaking) : défi et revanche nomment un invité qui
+ * accepte, un salon partagé est ouvert au premier qui ouvre le lien, l'appariement nomme les deux joueurs.
+ */
 export type RoomOrigin = 'SHARED' | 'CHALLENGE' | 'REMATCH' | 'MATCHMAKING' | 'BOT'
 
-/** Vue d'une salle (`RoomView`). Le partage se fait via `/join/{roomId}`. */
+/** Second joueur nommé (`NOMINATIVE`) ou premier venu par le lien (`OPEN_LINK`). */
+export type RoomAccess = 'NOMINATIVE' | 'OPEN_LINK'
+
+/** Vue d'une salle (`RoomView`). Le partage se fait via `go.joutio.com/j/{roomId}`. */
 export interface RoomView {
   roomId: string
   topic: TopicRefView
   status: RoomStatus
   vsBot: boolean
   origin: RoomOrigin
-  /** Vrai si le viewer est l'initiateur (seul habilité à annuler la salle). */
+  access: RoomAccess
+  /** Vrai si le viewer est l'initiateur : seul habilité à annuler la salle et à relancer l'invitation. */
   canCancel: boolean
   opponent: RoomOpponentView | null
   initiatorPresent: boolean
   participantPresent: boolean
   gameId: string | null
+  /** Partie terminée d'origine d'une revanche. */
+  sourceGameId: string | null
   createdAt: string
+  /** Échéance de l'étape en cours : réponse à l'invitation, puis attente des joueurs. */
   expiresAt: string
+  /** Prochaine relance possible de l'invitation (`INVITED` seulement). */
+  remindableAt: string | null
   updatedAt: string
 }
+
+/** Sections de l'onglet Défis (`defis.md`). */
+export interface DefisSections {
+  /** Défis reçus en attente de ma réponse, les plus proches de l'échéance d'abord. */
+  received: RoomView[]
+  /** Défis envoyés en attente de la réponse de l'invité. */
+  sent: RoomView[]
+  /** Salles qui attendent les joueurs : défis acceptés, salons partagés, appariements. Jamais le bot. */
+  waiting: RoomView[]
+}
+
+/**
+ * Changement d'étape d'une salle du joueur (`ROOM_STATUS` sur son flux personnel) : défi reçu ou envoyé, accepté,
+ * refusé, annulé, expiré, partie créée. Éphémère, indépendant de l'inbox et des préférences.
+ */
+export interface RoomStatusChange {
+  roomId: string
+  status: RoomStatus
+  expiresAt: string | null
+  at: string
+}
+
+/** Refus d'entrée dans une salle, poussé sur `/user/queue/room-presence`. */
+export type JoinRefusal = 'FULL' | 'NOT_INVITED' | 'UNAVAILABLE' | 'GONE'
+
+/** Étape d'une relance : invitation renvoyée, ou appel d'un joueur absent (« wizz »). */
+export type RoomReminderStage = 'INVITATION' | 'PRESENCE'
 
 /**
  * Catégorie d'échec d'une salle, dérivée du motif serveur pour choisir le message affiché.
  */
 export type RoomFailureKind = 'language' | 'topic' | 'timeout' | 'unknown'
 
-/** État de relance du viewer : disponibilité et fin de cadence éventuelle (epoch ms). */
-export interface WizzState {
-  /** Peut relancer maintenant (salle nominative, adversaire humain absent, cadence écoulée). */
+/** État de relance du viewer dans la salle : disponibilité et fin de cadence éventuelle (epoch ms). */
+export interface ReminderState {
+  /** Peut appeler maintenant (salle nominative, adversaire humain absent, cadence écoulée). */
   available: boolean
   /** Fin de la cadence du viewer ; `null` quand aucune relance récente ne la déclenche. */
   cooldownEndsAt: number | null
@@ -63,6 +107,9 @@ export interface RoomPresence {
 export interface RoomState {
   roomId: string
   topicId: string | null
+  origin: RoomOrigin | null
+  /** Partie d'origine d'une revanche. */
+  sourceGameId: string | null
   initiatorId: string | null
   opponentId: string | null
   participantId: string | null
@@ -72,8 +119,8 @@ export interface RoomState {
   expiresAt: string | null
   initiatorPresent: boolean
   participantPresent: boolean
-  /** Dernière relance (« wizz ») observée : joueur émetteur et instant (cadence anti-spam). */
-  lastWizz: { playerId: string; wizzedAt: string } | null
+  /** Dernier appel d'un joueur absent observé : émetteur et prochaine relance possible (cadence anti-spam). */
+  lastReminder: { playerId: string; remindableAt: string } | null
   /** Motif serveur de l'échec (`ROOM_FAILED.reason`), `null` sinon. */
   failureReason: string | null
 }
@@ -113,9 +160,16 @@ export interface MatchmakingState {
   deadlineAt: string | null
 }
 
-/** `POST /api/rooms` : salle privée partagée par lien. */
+/** `POST /api/rooms` : salon partagé par lien. */
 export interface CreateRoomCommand {
   topicId: string
+}
+
+/** `POST /api/rooms/challenge` : défi, ou revanche quand `gameId` (partie terminée d'origine) est présent. */
+export interface CreateChallengeCommand {
+  topicId: string
+  opponentId: string
+  gameId?: string
 }
 
 /** `POST /api/rooms/bot` : salle d'entraînement contre le bot. */

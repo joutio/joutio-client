@@ -26,7 +26,12 @@ export interface ContentNoticeRequest {
 export const CONTENT_NOTICES_ENDPOINT = '/api/public/content-notices'
 
 /** Motifs proposés pour un sujet, dans l'ordre d'affichage. */
-export const CONTENT_NOTICE_CATEGORIES: readonly ContentNoticeCategory[] = ['COPYRIGHT', 'IMAGE_RIGHTS', 'IMPERSONATION', 'OTHER_ILLEGAL']
+export const CONTENT_NOTICE_CATEGORIES: readonly ContentNoticeCategory[] = [
+  'COPYRIGHT',
+  'IMAGE_RIGHTS',
+  'IMPERSONATION',
+  'OTHER_ILLEGAL',
+]
 
 /** Longueur minimale de la description (`ContentNoticeRequest` du BFF). */
 export const CONTENT_NOTICE_MIN_DESCRIPTION = 20
@@ -37,7 +42,6 @@ export const QUESTION_CHOICES: readonly QuestionChoice[] = ['A', 'B', 'C', 'D']
 
 /** Statut de modération (enum backend `QuestionStatus`). */
 export type QuestionModeration = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED' | 'ARCHIVED'
-
 
 export interface QuestionAnswer {
   choice: QuestionChoice
@@ -82,7 +86,6 @@ export interface ReportSnapshot {
 
 export type ReportStatus = 'OPEN' | 'RESOLVED' | 'DISMISSED'
 
-
 /** Signalement vu par le propriétaire du sujet, sans identité du signalant (`OwnerQuestionReportView`). */
 export interface OwnerQuestionReport {
   reportId: string
@@ -111,9 +114,7 @@ export interface TopicTodo {
 /** Rôle du joueur sur le sujet, pour les actions (`creation.md`, Tri, actions et rôles). */
 export type WorkshopRole = 'creator' | 'admin' | 'writer'
 
-
 export type QuestionAction = 'archive' | 'restore' | 'delete'
-
 
 export interface CreateQuestionInput {
   contents: QuestionContent[]
@@ -123,7 +124,6 @@ export interface CreateQuestionInput {
 
 /** Statut affiché d'une question (`creation.md` § 1, Questions). */
 export type QuestionStatus = 'approved' | 'pending' | 'suspended' | 'rejected' | 'archived'
-
 
 export type TeamRole = 'CREATOR' | 'ADMIN' | 'WRITER'
 export interface TopicPermissions {
@@ -161,7 +161,6 @@ export interface ReportDetail {
 /** Tris de la liste Questions (`creation.md`). « Plus signalées » n'existe qu'une fois le sujet publié. */
 export const QUESTION_SORTS = ['Plus récentes', 'Plus signalées', 'Plus anciennes', 'Ordre alphabétique'] as const
 export type QuestionSort = (typeof QUESTION_SORTS)[number]
-
 
 /** `POST /api/topics` : brouillon de sujet. */
 export interface CreateTopicCommand {

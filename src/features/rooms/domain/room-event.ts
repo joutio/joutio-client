@@ -1,7 +1,11 @@
+import type { RoomOrigin, RoomReminderStage, RoomStatus } from '../types.js'
+
 /** Événements côté client (salle), miroir de `RoomEventResponse` en REST et STOMP. */
 
 export type RoomEventType =
   | 'ROOM_CREATED'
+  | 'ROOM_ACCEPTED'
+  | 'ROOM_DECLINED'
   | 'ROOM_COMPLETED'
   | 'ROOM_CANCELLED'
   | 'ROOM_EXPIRED'
@@ -13,7 +17,7 @@ export type RoomEventType =
   | 'ROOM_PLAYED_QUESTIONS_LOADED'
   | 'ROOM_QUESTIONS_LOADED'
   | 'ROOM_GAME_CREATED'
-  | 'ROOM_WIZZED'
+  | 'ROOM_REMINDED'
 
 export interface RoomCreatedEvent {
   type: 'ROOM_CREATED'
@@ -24,7 +28,24 @@ export interface RoomCreatedEvent {
   opponentId: string | null
   /** Salle contre le bot : le second joueur est joint automatiquement. */
   vsBot: boolean
+  origin: RoomOrigin
+  /** `INVITED` pour un défi ou une revanche, sinon `WAITING_PLAYERS`. */
+  status: RoomStatus
+  sourceGameId: string | null
   expiresAt: string | null
+}
+
+/** L'invité accepte : la salle attend les deux joueurs jusqu'à `expiresAt`. */
+export interface RoomAcceptedEvent {
+  type: 'ROOM_ACCEPTED'
+  roomId: string
+  expiresAt: string
+}
+
+/** L'invité refuse : la salle est terminée. */
+export interface RoomDeclinedEvent {
+  type: 'ROOM_DECLINED'
+  roomId: string
 }
 
 export interface RoomCompletedEvent {
@@ -89,21 +110,25 @@ export interface RoomGameCreatedEvent {
 }
 
 /**
- * Relance (« wizz ») d'un adversaire absent — pur temps réel : le joueur émetteur et l'instant
- * permettent au client de caler la cadence (anti-spam) sans rechargement.
+ * Relance : invitation renvoyée (`INVITATION`) ou adversaire absent appelé (`PRESENCE`, « wizz »). `remindableAt`
+ * cale la cadence de l'émetteur.
  */
-export interface RoomWizzedEvent {
-  type: 'ROOM_WIZZED'
+export interface RoomRemindedEvent {
+  type: 'ROOM_REMINDED'
   roomId: string
   /** Le joueur qui relance. */
   playerId: string
-  /** L'adversaire relancé (absent de la salle). */
+  /** Le joueur relancé. */
   targetId: string
-  wizzedAt: string
+  stage: RoomReminderStage
+  remindedAt: string
+  remindableAt: string
 }
 
 export type RoomEvent =
   | RoomCreatedEvent
+  | RoomAcceptedEvent
+  | RoomDeclinedEvent
   | RoomCompletedEvent
   | RoomCancelledEvent
   | RoomExpiredEvent
@@ -115,4 +140,4 @@ export type RoomEvent =
   | RoomPlayedQuestionsLoadedEvent
   | RoomQuestionsLoadedEvent
   | RoomGameCreatedEvent
-  | RoomWizzedEvent
+  | RoomRemindedEvent

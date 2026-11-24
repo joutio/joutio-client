@@ -5,7 +5,11 @@ import { addLiveFrame, addRoundTrip, CLOCK_WINDOW, clockOffset, emptyClock, type
 const TRUE_OFFSET = 5_000
 
 /** Aller-retour simulé : `up` ms jusqu'au serveur, `down` ms retour, envoyé à `sentAt` (horloge de l'appareil). */
-const roundTrip = (sentAt: number, up: number, down: number) => ({ sentAt, serverEpochMs: sentAt + up + TRUE_OFFSET, receivedAt: sentAt + up + down })
+const roundTrip = (sentAt: number, up: number, down: number) => ({
+  sentAt,
+  serverEpochMs: sentAt + up + TRUE_OFFSET,
+  receivedAt: sentAt + up + down,
+})
 
 /** Générateur déterministe (LCG) pour la gigue. */
 function random(seed: number) {
@@ -53,8 +57,10 @@ describe('server clock', () => {
     const next = random(42)
     let clock: ClockState = emptyClock
     // Rafale de 5 mesures : 400 ms de latence par trajet, plus 0 à 300 ms de gigue indépendante sur chaque trajet.
-    for (let n = 0; n < 5; n += 1) clock = addRoundTrip(clock, roundTrip(1_000 + n * 2_000, 400 + next() * 300, 400 + next() * 300))
-    for (let n = 0; n < 20; n += 1) clock = addLiveFrame(clock, 20_000 + n * 1_000 + TRUE_OFFSET, 20_000 + n * 1_000 + 400 + next() * 300)
+    for (let n = 0; n < 5; n += 1)
+      clock = addRoundTrip(clock, roundTrip(1_000 + n * 2_000, 400 + next() * 300, 400 + next() * 300))
+    for (let n = 0; n < 20; n += 1)
+      clock = addLiveFrame(clock, 20_000 + n * 1_000 + TRUE_OFFSET, 20_000 + n * 1_000 + 400 + next() * 300)
     const offset = clockOffset(clock) ?? 0
     expect(Math.abs(offset - TRUE_OFFSET)).toBeLessThanOrEqual(100)
   })

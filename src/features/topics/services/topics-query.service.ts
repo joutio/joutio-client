@@ -1,8 +1,17 @@
 import type { AbortSignalLike, HttpClient } from '../../../core/http.js'
 import { segment } from '../../../core/http.js'
 import type { PageResponse } from '../../../core/types/common.js'
-import type { TopicCardView, TopicFacetsView, TopicLeaderboardView, TopicOverviewView, TopicSort } from '../types.js'
-import type { LeaderboardPeriod, LeaderboardScope } from '../types.js'
+import type {
+  CatalogueFilters,
+  RankingFilters,
+  TopicCardView,
+  TopicFacetsView,
+  TopicLeaderboardView,
+  TopicOverviewView,
+  TopicPage,
+  TopicScope,
+  TopicSort,
+} from '../types.js'
 
 export const PAGE_SIZE = 20
 
@@ -12,55 +21,37 @@ export const RANKING_SIZE = 20
 /** Tri par défaut du catalogue (Sujets, feuille de défi). */
 export const DEFAULT_TOPIC_SORT: TopicSort = 'POPULAR'
 
-/** Portée « Mes thèmes » de la feuille Filtres de Sujets (`sujets.md` § 2). */
-export type TopicScope = 'ALL' | 'FOLLOWED' | 'MINE'
-
-/** Filtres du catalogue ; `getCataloguePage` décrit les écarts BFF mockés (`sujets.md` § 5). */
-export interface CatalogueFilters {
-  query: string
-  /** Univers choisis ; vide = tous. */
-  categories: readonly string[]
-  sort: TopicSort
-  hideFollowed: boolean
-  /** Uniquement les sujets suivis (onglet Suivis de l'Accueil, « Mes thèmes › Suivis ») : `followed=true`. */
-  followed?: boolean
-  /** Uniquement les sujets que j'ai créés (« Mes thèmes › Mes sujets ») : `mine=true`, exclusif de `followed`. */
-  mine?: boolean
-  /** Taille de page envoyée au BFF ; 20 par défaut. */
-  size?: number
-}
-
-/** Filtres d'un classement paginé (Tous les classements). */
-export interface RankingFilters {
-  period: LeaderboardPeriod
-  scope: LeaderboardScope
-  /** `YYYY-MM`, utilisé par la période mensuelle. */
-  month?: string
-}
-
 /** Tous les classements : depuis toujours, monde entier par défaut, comme l'onglet de la Fiche sujet (2026-11-06). */
 export const DEFAULT_RANKING_FILTERS: Pick<RankingFilters, 'period' | 'scope'> = { period: 'ALL_TIME', scope: 'WORLD' }
 
-export interface TopicPage {
-  topics: TopicCardView[]
-  last: boolean
-  page: number
-}
-
 /** En-tête et onglet Progression de la Fiche sujet. */
-export async function getTopicOverview(http: HttpClient, topicId: string, signal?: AbortSignalLike): Promise<TopicOverviewView> {
+export async function getTopicOverview(
+  http: HttpClient,
+  topicId: string,
+  signal?: AbortSignalLike,
+): Promise<TopicOverviewView> {
   return http.get<TopicOverviewView>(`/api/topics/${segment(topicId)}/overview`, { signal })
 }
 
 /** Classement de la Fiche sujet : depuis toujours, monde entier, les dix premiers. */
-export async function getTopicLeaderboard(http: HttpClient, topicId: string, signal?: AbortSignalLike): Promise<TopicLeaderboardView> {
+export async function getTopicLeaderboard(
+  http: HttpClient,
+  topicId: string,
+  signal?: AbortSignalLike,
+): Promise<TopicLeaderboardView> {
   return http.get<TopicLeaderboardView>(`/api/topics/${segment(topicId)}/leaderboard`, {
     query: { period: 'ALL_TIME', scope: 'WORLD', page: 0, size: 10 },
     signal,
   })
 }
 
-const page = (http: HttpClient, filters: CatalogueFilters, category: string | undefined, index: number, signal?: AbortSignalLike) =>
+const page = (
+  http: HttpClient,
+  filters: CatalogueFilters,
+  category: string | undefined,
+  index: number,
+  signal?: AbortSignalLike,
+) =>
   http.get<PageResponse<TopicCardView>>('/api/topics', {
     query: {
       q: filters.query || undefined,
@@ -84,7 +75,12 @@ const compare: Partial<Record<TopicSort, (a: TopicCardView, b: TopicCardView) =>
  * sait pas exclure les sujets suivis. Plusieurs univers : une requête par univers, fusionnées page par page.
  * « Masquer les sujets suivis » : filtré ici, une page peut donc compter moins de 20 sujets.
  */
-export async function getCataloguePage(http: HttpClient, filters: CatalogueFilters, index: number, signal?: AbortSignalLike): Promise<TopicPage> {
+export async function getCataloguePage(
+  http: HttpClient,
+  filters: CatalogueFilters,
+  index: number,
+  signal?: AbortSignalLike,
+): Promise<TopicPage> {
   const categories = filters.categories.length > 0 ? filters.categories : [undefined]
   const pages = await Promise.all(categories.map((category) => page(http, filters, category, index, signal)))
   let topics = pages.flatMap((result) => result.content)
@@ -95,7 +91,12 @@ export async function getCataloguePage(http: HttpClient, filters: CatalogueFilte
 }
 
 /** Nombre de sujets par univers pour une recherche (facettes). */
-export async function getFacets(http: HttpClient, query: string, scope: TopicScope, signal?: AbortSignalLike): Promise<TopicFacetsView> {
+export async function getFacets(
+  http: HttpClient,
+  query: string,
+  scope: TopicScope,
+  signal?: AbortSignalLike,
+): Promise<TopicFacetsView> {
   return http.get<TopicFacetsView>('/api/topics/facets', {
     query: { q: query || undefined, followed: scope === 'FOLLOWED' || undefined, mine: scope === 'MINE' || undefined },
     signal,

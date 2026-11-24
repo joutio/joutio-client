@@ -11,10 +11,17 @@ const key = (message: MessageKey) => ({ error: message })
 const text = (max: number) => z.string().trim().max(max, key('form.tooLong'))
 
 /** Connexion par code : adresse e-mail. */
-export const loginSchema = z.object({ email: z.string().trim().pipe(z.email(key('form.invalidEmail'))) })
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .pipe(z.email(key('form.invalidEmail'))),
+})
 
 /** Code à usage unique : exactement `OTP_LENGTH` chiffres. */
-export const otpSchema = z.object({ code: z.string().regex(new RegExp(`^\\d{${OTP_LENGTH}}$`), key('form.otpIncomplete')) })
+export const otpSchema = z.object({
+  code: z.string().regex(new RegExp(`^\\d{${OTP_LENGTH}}$`), key('form.otpIncomplete')),
+})
 
 /** Édition du profil : pseudonyme, bio et pays (ISO 3166-1 alpha-2, ou aucun). */
 export const profileSchema = z.object({

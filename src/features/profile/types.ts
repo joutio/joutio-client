@@ -229,3 +229,19 @@ export interface RewardsView {
     condition: { badgeCode: string; badgeLabel: string; target: number }
   }[]
 }
+
+/** Adversaire d'une partie de l'historique. */
+export type HistoryOpponentType = 'HUMAN' | 'BOT'
+export type HistoryOutcome = 'ALL' | 'WIN' | 'LOSS' | 'DRAW'
+export type HistorySort = 'RECENT' | 'OLDEST'
+
+/** Filtres de l'historique des parties (`historique.md` § 5). */
+export interface HistoryFilters {
+  topicId?: string
+  opponentId?: string
+  opponentType?: HistoryOpponentType
+  outcome: HistoryOutcome
+  sort: HistorySort
+}
+
+export type HistoryFilterState = Pick<HistoryFilters, 'opponentType' | 'outcome' | 'sort'>

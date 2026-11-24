@@ -33,7 +33,10 @@ export function parseShareUrl(input: string): ShareTarget | null {
   if (!match) return null
   const scheme = /^([a-z][a-z0-9+.-]*):\/\/([^/?#]*)/i.exec(input.trim())
   // `joutio://join/x7k2` : l'hôte de l'URL est le premier segment du chemin.
-  const segments = [scheme && scheme[1].toLowerCase() === 'joutio' ? scheme[2] : '', ...(match[1] ?? '').split('/')].filter(Boolean)
+  const segments = [
+    scheme && scheme[1].toLowerCase() === 'joutio' ? scheme[2] : '',
+    ...(match[1] ?? '').split('/'),
+  ].filter(Boolean)
   const params = new URLSearchParamsLite(match[2] ?? '')
   if (segments.length === 2) {
     const [head, id] = segments as [string, string]
@@ -54,7 +57,8 @@ class URLSearchParamsLite {
     for (const pair of query.split('&')) {
       if (!pair) continue
       const [key, value = ''] = pair.split('=')
-      if (key && !this.values.has(key)) this.values.set(decodeURIComponent(key), decodeURIComponent(value.replace(/\+/g, ' ')))
+      if (key && !this.values.has(key))
+        this.values.set(decodeURIComponent(key), decodeURIComponent(value.replace(/\+/g, ' ')))
     }
   }
 

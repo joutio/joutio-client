@@ -15,22 +15,81 @@ export default tseslint.config(
         'error',
         {
           patterns: [
-            { group: ['react/*', 'react-dom', 'react-dom/*', 'react-native', 'react-native/*', 'expo', 'expo-*', 'vite', 'next', 'next/*'], message: 'Domaine partagé : ni plateforme ni renderer (ADR 0001).' },
+            {
+              group: [
+                'react/*',
+                'react-dom',
+                'react-dom/*',
+                'react-native',
+                'react-native/*',
+                'expo',
+                'expo-*',
+                'vite',
+                'next',
+                'next/*',
+              ],
+              message: 'Domaine partagé : ni plateforme ni renderer (ADR 0001).',
+            },
             { group: ['@/*'], message: "Domaine autonome : aucun alias d'application." },
           ],
         },
       ],
-      'no-restricted-globals': ['error', 'window', 'document', 'localStorage', 'sessionStorage', 'fetch', 'navigator', 'WebSocket'],
+      'no-restricted-globals': [
+        'error',
+        'window',
+        'document',
+        'localStorage',
+        'sessionStorage',
+        'fetch',
+        'navigator',
+        'WebSocket',
+      ],
     },
   },
   {
-    // Le client HTTP et le transport temps réel sont injectés par l'app : stables par nature, ils ne font pas
-    // partie de la clé de cache (identité sérialisable). La règle `exhaustive-deps` les ignore.
-    files: ['src/features/**/queries.ts', 'src/features/**/hooks/**', 'src/realtime/**/*.ts'],
+    // Le client HTTP et le transport temps réel viennent du runtime (`useJoutio`) : stables par nature, ils ne font pas
+    // partie de la clé de cache. La règle `exhaustive-deps` les ignore.
+    files: ['src/features/**/query/**', 'src/features/**/hooks/**', 'src/core/**/*.ts', 'src/sync/**/*.ts'],
     rules: {
       '@tanstack/query/exhaustive-deps': [
         'error',
-        { allowlist: { types: ['HttpClient', 'RealtimeTransport'], variables: ['http', 'subscribe'] } },
+        {
+          allowlist: {
+            types: ['HttpClient', 'RealtimeTransport', 'JoutioRuntime'],
+            variables: ['http', 'realtime', 'clock'],
+          },
+        },
+      ],
+    },
+  },
+  {
+    // Le socle ne connaît aucune feature : les dépendances vont des features vers `core`, jamais l'inverse.
+    files: ['src/core/**/*.ts'],
+    ignores: ['src/core/**/tests/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: ['**/features/**', '**/sync/**'], message: "core ne dépend d'aucune feature." },
+            {
+              group: [
+                'react/*',
+                'react-dom',
+                'react-dom/*',
+                'react-native',
+                'react-native/*',
+                'expo',
+                'expo-*',
+                'vite',
+                'next',
+                'next/*',
+              ],
+              message: 'Domaine partagé : ni plateforme ni renderer (ADR 0001).',
+            },
+            { group: ['@/*'], message: "Domaine autonome : aucun alias d'application." },
+          ],
+        },
       ],
     },
   },

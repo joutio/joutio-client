@@ -31,10 +31,12 @@ export const topicNamesSchema = z.object({ fr: required(MAX_NAME), en: text(MAX_
 export const topicDescriptionsSchema = z.object({ fr: text(MAX_DESCRIPTION), en: text(MAX_DESCRIPTION) })
 
 /** Titres personnalisés par langue et par palier (`authoring/titles`). */
-export const topicTitlesSchema = z.record(z.string(), z.record(z.string(), z.string())).superRefine((draft, context) => {
-  const tooLong = tooLongTitle(draft)
-  if (tooLong) context.addIssue({ code: 'custom', message: 'form.tooLong', path: [tooLong.language, tooLong.tier] })
-})
+export const topicTitlesSchema = z
+  .record(z.string(), z.record(z.string(), z.string()))
+  .superRefine((draft, context) => {
+    const tooLong = tooLongTitle(draft)
+    if (tooLong) context.addIssue({ code: 'custom', message: 'form.tooLong', path: [tooLong.language, tooLong.tier] })
+  })
 
 /**
  * Question de l'atelier, prête à l'envoi : `isReady` de `authoring/question-draft`. L'image est « choisie dans cet
@@ -49,17 +51,24 @@ export const questionDraftSchema = (savedImageUrl?: string) =>
 /** Refus motivé d'une question en modération. */
 export const rejectQuestionSchema = z.object({ reason: required(MAX_REJECT) })
 
-const reasons = <T extends string>() => z.array(z.custom<T>((value) => typeof value === 'string')).min(1, key('form.reasonRequired'))
+const reasons = <T extends string>() =>
+  z.array(z.custom<T>((value) => typeof value === 'string')).min(1, key('form.reasonRequired'))
 
 /** Signalement d'un joueur : au moins un motif, commentaire facultatif. */
 export const userReportSchema = z.object({ reasons: reasons<UserReportReason>(), comment: text(MAX_REPORT_COMMENT) })
 
 /** Signalement d'une question : au moins un motif, commentaire facultatif. */
-export const questionReportSchema = z.object({ reasons: reasons<QuestionReportReason>(), comment: text(MAX_REPORT_COMMENT) })
+export const questionReportSchema = z.object({
+  reasons: reasons<QuestionReportReason>(),
+  comment: text(MAX_REPORT_COMMENT),
+})
 
 /** Signalement de contenu illicite (sujet) : catégorie, description motivée, déclaration de bonne foi. */
 export const contentNoticeSchema = z.object({
-  category: z.custom<ContentNoticeCategory>((value) => CONTENT_NOTICE_CATEGORIES.includes(value as ContentNoticeCategory), key('form.required')),
+  category: z.custom<ContentNoticeCategory>(
+    (value) => CONTENT_NOTICE_CATEGORIES.includes(value as ContentNoticeCategory),
+    key('form.required'),
+  ),
   description: text(MAX_NOTICE_DESCRIPTION).min(CONTENT_NOTICE_MIN_DESCRIPTION, key('form.tooShort')),
   goodFaith: z.boolean().refine((value) => value, key('form.required')),
 })

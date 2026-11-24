@@ -98,3 +98,35 @@ export interface TopicRefView {
   /** Badge « Officiel » (2026-11-15). */
   official?: boolean
 }
+
+/** Portée « Mes thèmes » de la feuille Filtres de Sujets (`sujets.md` § 2). */
+export type TopicScope = 'ALL' | 'FOLLOWED' | 'MINE'
+
+/** Filtres du catalogue ; `getCataloguePage` décrit les écarts BFF mockés (`sujets.md` § 5). */
+export interface CatalogueFilters {
+  query: string
+  /** Univers choisis ; vide = tous. */
+  categories: readonly string[]
+  sort: TopicSort
+  hideFollowed: boolean
+  /** Uniquement les sujets suivis (onglet Suivis de l'Accueil, « Mes thèmes › Suivis ») : `followed=true`. */
+  followed?: boolean
+  /** Uniquement les sujets que j'ai créés (« Mes thèmes › Mes sujets ») : `mine=true`, exclusif de `followed`. */
+  mine?: boolean
+  /** Taille de page envoyée au BFF ; 20 par défaut. */
+  size?: number
+}
+
+/** Filtres d'un classement paginé (Tous les classements). */
+export interface RankingFilters {
+  period: LeaderboardPeriod
+  scope: LeaderboardScope
+  /** `YYYY-MM`, utilisé par la période mensuelle. */
+  month?: string
+}
+
+export interface TopicPage {
+  topics: TopicCardView[]
+  last: boolean
+  page: number
+}

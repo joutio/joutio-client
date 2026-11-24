@@ -26,7 +26,14 @@ const saved: QuestionEditorView = {
 
 describe('question image description', () => {
   it('is sent with the content of each language when there is an image', () => {
-    const draft = { ...emptyDraft(), texts: { fr: 'Quelle ville ?', en: '' }, answers: { fr: ['Paris', 'Lyon', 'Lille', 'Nice'], en: ['', '', '', ''] }, correct: 0, imageUrl: 'https://img/x.webp', alt: { fr: ' La tour Eiffel ', en: '' } }
+    const draft = {
+      ...emptyDraft(),
+      texts: { fr: 'Quelle ville ?', en: '' },
+      answers: { fr: ['Paris', 'Lyon', 'Lille', 'Nice'], en: ['', '', '', ''] },
+      correct: 0,
+      imageUrl: 'https://img/x.webp',
+      alt: { fr: ' La tour Eiffel ', en: '' },
+    }
     expect(toCreateInput(draft).contents[0]?.imageAlt).toBe('La tour Eiffel')
     expect(toCreateInput({ ...draft, imageUrl: undefined }).contents[0]?.imageAlt).toBeNull()
   })
@@ -35,7 +42,9 @@ describe('question image description', () => {
     const draft = draftFromQuestion(saved)
     expect(draft.alt.fr).toBe('La tour Eiffel')
     expect(buildQuestionPlan(saved, draft)).toEqual([])
-    expect(buildQuestionPlan(saved, { ...draft, alt: { fr: 'Le Louvre', en: '' } })).toEqual([{ kind: 'imageAlt', language: 'fr', imageAlt: 'Le Louvre' }])
+    expect(buildQuestionPlan(saved, { ...draft, alt: { fr: 'Le Louvre', en: '' } })).toEqual([
+      { kind: 'imageAlt', language: 'fr', imageAlt: 'Le Louvre' },
+    ])
   })
 
   it('is cleared with the image', () => {

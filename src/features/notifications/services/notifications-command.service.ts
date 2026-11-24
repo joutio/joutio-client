@@ -5,7 +5,11 @@ import type { NotificationCategory } from '../types.js'
 /** Commandes de la boîte de réception et des préférences. */
 
 /** `POST /api/notifications/{id}/read`. */
-export async function readNotification(http: HttpClient, notificationId: string, signal?: AbortSignalLike): Promise<void> {
+export async function readNotification(
+  http: HttpClient,
+  notificationId: string,
+  signal?: AbortSignalLike,
+): Promise<void> {
   return http.post<void>(`/api/notifications/${segment(notificationId)}/read`, { signal })
 }
 
@@ -15,11 +19,20 @@ export async function readAllNotifications(http: HttpClient, signal?: AbortSigna
 }
 
 /** `DELETE /api/notifications/{id}`. */
-export async function removeNotification(http: HttpClient, notificationId: string, signal?: AbortSignalLike): Promise<void> {
+export async function removeNotification(
+  http: HttpClient,
+  notificationId: string,
+  signal?: AbortSignalLike,
+): Promise<void> {
   return http.delete<void>(`/api/notifications/${segment(notificationId)}`, { signal })
 }
 
 /** `PUT /api/notification-preferences/{category}`. */
-export async function setNotificationPreference(http: HttpClient, category: NotificationCategory, enabled: boolean, signal?: AbortSignalLike): Promise<void> {
+export async function setNotificationPreference(
+  http: HttpClient,
+  category: NotificationCategory,
+  enabled: boolean,
+  signal?: AbortSignalLike,
+): Promise<void> {
   return http.put<void>(`/api/notification-preferences/${category}`, { body: { enabled }, signal })
 }

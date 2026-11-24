@@ -279,8 +279,12 @@ function sceneAt(game: GameState, now: number, graceMs: number = TRANSITION_GRAC
       // référence des animations d'entrée et du délai de lecture.
       const questionStart = instantToMillis(round.shownAt) ?? active.startAt
       const elapsed = ahead ? 0 : Math.max(0, now - questionStart)
-      const timeLeft = active.locked || active.deadlineAt == null ? ROUND_SECONDS : clamp((active.deadlineAt - now) / 1000, 0, ROUND_SECONDS)
-      const timerRunning = !active.locked && !ahead && active.deadlineAt != null && now >= active.deadlineAt - ROUND_SECONDS * 1000
+      const timeLeft =
+        active.locked || active.deadlineAt == null
+          ? ROUND_SECONDS
+          : clamp((active.deadlineAt - now) / 1000, 0, ROUND_SECONDS)
+      const timerRunning =
+        !active.locked && !ahead && active.deadlineAt != null && now >= active.deadlineAt - ROUND_SECONDS * 1000
       return {
         kind: 'question',
         round: active.round,

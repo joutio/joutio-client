@@ -1,42 +1,35 @@
-import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query'
-import type { HttpClient } from '../../../core/http.js'
-import { applyBlock, blockKeys } from '../cache/block.js'
-import { applyPlayerFollow, followKeys } from '../cache/follow.js'
+import { useOptimisticMutation } from '../../../core/query/use-optimistic-mutation.js'
+import { meKeys } from '../../me/query/keys.js'
+import { profileKeys } from '../../profile/query/keys.js'
+import { roomKeys } from '../../rooms/query/keys.js'
+import { applyBlock } from '../cache/block.js'
+import { applyPlayerFollow } from '../cache/follow.js'
+import { contactKeys } from '../query/keys.js'
 import { blockUser, followUser, unblockUser, unfollowUser } from '../services/social-command.service.js'
-import type { SocialMutationCallbacks } from '../types.js'
 
-const invalidate = (client: ReturnType<typeof useQueryClient>, keys: readonly QueryKey[]) =>
-  keys.forEach((queryKey) => void client.invalidateQueries({ queryKey }))
-
-export function useFollowPlayer(http: HttpClient, meId: string, userId: string, callbacks?: SocialMutationCallbacks) {
-  const client = useQueryClient()
-  return useMutation({
-    mutationKey: ['social', 'follow', meId, userId],
-    mutationFn: (follow: boolean) => (follow ? followUser : unfollowUser)(http, userId),
-    // Optimisme natif TanStack : appliqué dans le cache, relu (invalidate) sur erreur seulement.
-    onMutate: (follow) => {
-      applyPlayerFollow(client, meId, userId, follow)
-    },
-    onSuccess: (_data, follow) => callbacks?.onSuccess?.(follow),
-    onError: (_error, follow) => {
-      invalidate(client, followKeys(meId, userId))
-      callbacks?.onError?.(follow)
-    },
+/** Suivre (`mutate(true)`) ou ne plus suivre (`mutate(false)`) un joueur. */
+export function useFollowPlayer(meId: string, userId: string) {
+  return useOptimisticMutation({
+    mutationKey: contactKeys.mutations.follow(userId),
+    mutationFn: (follow: boolean, { http }) => (follow ? followUser : unfollowUser)(http, userId),
+    touches: () => [profileKeys.detail(userId), profileKeys.detail(meId), meKeys.account(), contactKeys.lists()],
+    apply: (client, follow) => applyPlayerFollow(client, meId, userId, follow),
   })
 }
 
-export function useBlockPlayer(http: HttpClient, meId: string, userId: string, callbacks?: SocialMutationCallbacks) {
-  const client = useQueryClient()
-  return useMutation({
-    mutationKey: ['social', 'block', meId, userId],
-    mutationFn: (block: boolean) => (block ? blockUser : unblockUser)(http, userId),
-    onMutate: (block) => {
-      applyBlock(client, meId, userId, block)
-    },
-    onSuccess: (_data, block) => callbacks?.onSuccess?.(block),
-    onError: (_error, block) => {
-      invalidate(client, blockKeys(meId, userId))
-      callbacks?.onError?.(block)
-    },
+/** Bloquer (`mutate(true)`) ou débloquer (`mutate(false)`) un joueur. */
+export function useBlockPlayer(meId: string, userId: string) {
+  return useOptimisticMutation({
+    mutationKey: contactKeys.mutations.block(userId),
+    mutationFn: (block: boolean, { http }) => (block ? blockUser : unblockUser)(http, userId),
+    touches: () => [
+      profileKeys.detail(userId),
+      profileKeys.detail(meId),
+      meKeys.account(),
+      meKeys.blocked(),
+      contactKeys.lists(),
+      roomKeys.mine(),
+    ],
+    apply: (client, block) => applyBlock(client, meId, userId, block),
   })
 }

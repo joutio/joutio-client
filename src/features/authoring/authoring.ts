@@ -14,15 +14,6 @@ import type {
   WorkshopRole,
 } from './types.js'
 
-
-
-
-
-
-
-
-
-
 export const todoTotal = (todo: TopicTodo | undefined) => (todo ? todo.pending + todo.reportedQuestions : 0)
 
 /** Le contenu signalé diffère de la question actuelle (texte, réponses ou bonne réponse, dans la langue du signalement). */
@@ -32,7 +23,9 @@ export function snapshotDiffers(question: QuestionEditorView, snapshot: ReportSn
   if (!content) return true
   if (content.text !== snapshot.questionText || snapshot.correctAnswer !== question.correctAnswer) return true
   return QUESTION_CHOICES.some(
-    (choice) => content.answers.find((answer) => answer.choice === choice)?.text !== snapshot.answers.find((answer) => answer.choice === choice)?.text,
+    (choice) =>
+      content.answers.find((answer) => answer.choice === choice)?.text !==
+      snapshot.answers.find((answer) => answer.choice === choice)?.text,
   )
 }
 
@@ -51,13 +44,16 @@ export const workshopRole = (permissions: TopicPermissions | undefined): Worksho
  * Qui fait quoi sur une question : le créateur et les administrateurs archivent, restaurent et suppriment toute
  * question ; un rédacteur archive ou supprime **ses** questions en attente ou rejetées, rien d'autre.
  */
-export function questionActions(role: WorkshopRole, question: Pick<QuestionEditorView, 'status' | 'creatorId'>, userId: string | undefined): QuestionAction[] {
+export function questionActions(
+  role: WorkshopRole,
+  question: Pick<QuestionEditorView, 'status' | 'creatorId'>,
+  userId: string | undefined,
+): QuestionAction[] {
   if (question.status === 'ARCHIVED') return role === 'writer' ? [] : ['restore', 'delete']
   if (role !== 'writer') return ['archive', 'delete']
   const mine = question.creatorId !== undefined && question.creatorId === userId
   return mine && (question.status === 'PENDING' || question.status === 'REJECTED') ? ['archive', 'delete'] : []
 }
-
 
 /** Statut affiché d'une question (`creation.md` § 1, Questions). */
 export const QUESTION_STATUS_LABEL: Record<QuestionStatus, string> = {
@@ -111,16 +107,15 @@ export const REPORT_REASON_LABEL: Record<QuestionReportReason, string> = {
 }
 
 /** « L'énoncé, Les réponses ». */
-export const reasonsLabel = (reasons: readonly QuestionReportReason[]) => reasons.map((reason) => REPORT_REASON_LABEL[reason]).join(', ')
-
+export const reasonsLabel = (reasons: readonly QuestionReportReason[]) =>
+  reasons.map((reason) => REPORT_REASON_LABEL[reason]).join(', ')
 
 /** Tris de la liste Questions (`creation.md`). « Plus signalées » n'existe qu'une fois le sujet publié. */
 export function sortQuestions(questions: readonly QuestionEditorView[], sort: QuestionSort): QuestionEditorView[] {
   const recent = [...questions].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   if (sort === 'Plus anciennes') return recent.reverse()
   if (sort === 'Plus signalées') return recent.sort((a, b) => b.openReportCount - a.openReportCount)
-  if (sort === 'Ordre alphabétique') return [...questions].sort((a, b) => questionText(a).localeCompare(questionText(b), 'fr'))
+  if (sort === 'Ordre alphabétique')
+    return [...questions].sort((a, b) => questionText(a).localeCompare(questionText(b), 'fr'))
   return recent
 }
-
-

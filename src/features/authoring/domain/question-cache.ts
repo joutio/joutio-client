@@ -1,11 +1,15 @@
 import type { QuestionEditorView } from '../types.js'
 import type { QuestionOperation } from './question-draft.js'
 
-/** Applies exactly the submitted fields; editing does not reset moderation in the domain. */
+/**
+ * Applique exactement les champs envoyés à une question en cache (création comprise, datée de `now`) ; modifier une
+ * question ne change pas sa modération dans le domaine.
+ */
 export function applyQuestionOperations(
   previous: QuestionEditorView | undefined,
   id: string,
   operations: readonly QuestionOperation[],
+  now: string,
 ): QuestionEditorView | undefined {
   let question = previous
   for (const operation of operations) {
@@ -19,7 +23,7 @@ export function applyQuestionOperations(
         openReportCount: 0,
         totalReportCount: 0,
         lastReportedAt: null,
-        createdAt: new Date().toISOString(),
+        createdAt: now,
         updatedAt: null,
       }
     } else if (question) {
@@ -30,7 +34,12 @@ export function applyQuestionOperations(
           ...question,
           contents: [
             ...question.contents.filter((content) => content.language !== operation.language),
-            { language: operation.language, text: operation.text, answers: operation.answers, imageAlt: operation.imageAlt },
+            {
+              language: operation.language,
+              text: operation.text,
+              answers: operation.answers,
+              imageAlt: operation.imageAlt,
+            },
           ],
         }
       else

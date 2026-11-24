@@ -1,5 +1,6 @@
-import type { RoomState } from '../types.js'
+import type { ReminderState, RoomFailureKind, RoomState } from '../types.js'
 import type {
+  RoomAcceptedEvent,
   RoomCompletedEvent,
   RoomCreatedEvent,
   RoomEnteredEvent,
@@ -7,11 +8,8 @@ import type {
   RoomFailedEvent,
   RoomGameCreatedEvent,
   RoomLeftEvent,
-  RoomWizzedEvent,
+  RoomRemindedEvent,
 } from './room-event.js'
-
-/** Cadence anti-spam entre deux relances du même joueur (miroir backend `RoomWizzRules`). */
-export const WIZZ_COOLDOWN_MS = 10_000
 
 /**
  * Modèle client d'une salle : l'état **réagit** aux `RoomEvent` (historique REST + push WebSocket,
@@ -21,6 +19,8 @@ export const WIZZ_COOLDOWN_MS = 10_000
 export class Room implements RoomState {
   declare readonly roomId: string
   declare readonly topicId: string | null
+  declare readonly origin: RoomState['origin']
+  declare readonly sourceGameId: string | null
   declare readonly initiatorId: string | null
   declare readonly opponentId: string | null
   declare readonly participantId: string | null
@@ -30,7 +30,7 @@ export class Room implements RoomState {
   declare readonly expiresAt: string | null
   declare readonly initiatorPresent: boolean
   declare readonly participantPresent: boolean
-  declare readonly lastWizz: { playerId: string; wizzedAt: string } | null
+  declare readonly lastReminder: RoomState['lastReminder']
   declare readonly failureReason: string | null
 
   private constructor(fields: RoomState) {
@@ -42,6 +42,8 @@ export class Room implements RoomState {
     return new Room({
       roomId,
       topicId: null,
+      origin: null,
+      sourceGameId: null,
       initiatorId: null,
       opponentId: null,
       participantId: null,
@@ -51,13 +53,13 @@ export class Room implements RoomState {
       expiresAt: null,
       initiatorPresent: false,
       participantPresent: false,
-      lastWizz: null,
+      lastReminder: null,
       failureReason: null,
     })
   }
 
   /** Catégorie d'échec à partir du motif serveur (`null`/inconnu → `unknown`). */
-  static failureKind(reason: string | null | undefined): import('../types.js').RoomFailureKind {
+  static failureKind(reason: string | null | undefined): RoomFailureKind {
     switch (reason) {
       case 'TOPIC_NOT_AVAILABLE_IN_LANGUAGE':
         return 'language'
@@ -77,12 +79,16 @@ export class Room implements RoomState {
     switch (event.type) {
       case 'ROOM_CREATED':
         return this.onRoomCreated(event)
+      case 'ROOM_ACCEPTED':
+        return this.onRoomAccepted(event)
+      case 'ROOM_DECLINED':
+        return this.copyWith({ status: 'DECLINED' })
       case 'ROOM_ENTERED':
         return this.onRoomEntered(event)
       case 'ROOM_LEFT':
         return this.onRoomLeft(event)
-      case 'ROOM_WIZZED':
-        return this.onRoomWizzed(event)
+      case 'ROOM_REMINDED':
+        return this.onRoomReminded(event)
       case 'ROOM_ALL_PRESENT':
         return this.onRoomAllPresent()
       case 'ROOM_PLAYERS_LOADED':
@@ -105,11 +111,11 @@ export class Room implements RoomState {
   }
 
   /**
-   * Relance possible ? Salle nominative en attente, viewer présent, adversaire humain absent,
-   * cadence du viewer écoulée. Le serveur reste l'arbitre (agrégat) — ce calcul pilote le bouton.
+   * Appel de l'adversaire absent possible ? Salle nominative en attente, viewer présent, adversaire humain absent,
+   * cadence du viewer écoulée. Le serveur reste l'arbitre : ce calcul pilote le bouton.
    */
-  wizzState(viewerId: string | null, nowMs: number): import('../types.js').WizzState {
-    const unavailable: import('../types.js').WizzState = { available: false, cooldownEndsAt: null }
+  reminderState(viewerId: string | null, nowMs: number): ReminderState {
+    const unavailable: ReminderState = { available: false, cooldownEndsAt: null }
     if (!viewerId || this.vsBot || this.opponentId === null) return unavailable
     if (this.status !== 'WAITING_PLAYERS') return unavailable
 
@@ -119,12 +125,9 @@ export class Room implements RoomState {
     const opponentPresent = viewerIsInitiator ? this.participantPresent : this.initiatorPresent
     if (!viewerPresent || opponentPresent) return unavailable
 
-    const cooldownEndsAt = this.lastWizz?.playerId === viewerId ? Date.parse(this.lastWizz.wizzedAt) + WIZZ_COOLDOWN_MS : null
-    const available = cooldownEndsAt === null || Number.isNaN(cooldownEndsAt) || cooldownEndsAt <= nowMs
-    return {
-      available,
-      cooldownEndsAt: cooldownEndsAt !== null && !Number.isNaN(cooldownEndsAt) ? cooldownEndsAt : null,
-    }
+    const cooldownEndsAt = this.lastReminder?.playerId === viewerId ? Date.parse(this.lastReminder.remindableAt) : null
+    if (cooldownEndsAt === null || Number.isNaN(cooldownEndsAt)) return { available: true, cooldownEndsAt: null }
+    return { available: cooldownEndsAt <= nowMs, cooldownEndsAt }
   }
 
   private copyWith(patch: Partial<RoomState>): Room {
@@ -134,12 +137,18 @@ export class Room implements RoomState {
   private onRoomCreated(event: RoomCreatedEvent): Room {
     return this.copyWith({
       topicId: event.topicId,
+      origin: event.origin,
+      sourceGameId: event.sourceGameId,
       initiatorId: event.initiatorId,
       opponentId: event.opponentId,
       vsBot: event.vsBot,
       expiresAt: event.expiresAt,
-      status: 'WAITING_PLAYERS',
+      status: event.status,
     })
+  }
+
+  private onRoomAccepted(event: RoomAcceptedEvent): Room {
+    return this.copyWith({ status: 'WAITING_PLAYERS', expiresAt: event.expiresAt })
   }
 
   private onRoomEntered(event: RoomEnteredEvent): Room {
@@ -163,11 +172,10 @@ export class Room implements RoomState {
     })
   }
 
-  private onRoomWizzed(event: RoomWizzedEvent): Room {
-    // Pur temps réel : seule la cadence du joueur émetteur est mémorisée (le bouton se grise).
-    return this.copyWith({
-      lastWizz: { playerId: event.playerId, wizzedAt: event.wizzedAt },
-    })
+  private onRoomReminded(event: RoomRemindedEvent): Room {
+    // L'invitation renvoyée se lit sur la vue REST (`remindableAt`) ; ici, seule la cadence d'appel en salle compte.
+    if (event.stage !== 'PRESENCE') return this
+    return this.copyWith({ lastReminder: { playerId: event.playerId, remindableAt: event.remindableAt } })
   }
 
   private onRoomAllPresent(): Room {

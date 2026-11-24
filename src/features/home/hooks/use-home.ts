@@ -1,13 +1,16 @@
-import { useQuery } from '@tanstack/react-query'
+import { queryOptions, useQuery } from '@tanstack/react-query'
 import type { HttpClient } from '../../../core/http.js'
+import { useJoutio } from '../../../core/runtime/context.js'
 import { getHome } from '../services/home-query.service.js'
+import { homeKeys } from '../query/keys.js'
 
-/** Clés React Query de l'accueil, exportées pour les écritures transversales (`queryKeys`). */
-export const homeKeys = {
-  all: () => ['home'] as const,
+export const homeQueries = {
+  view: (http: HttpClient) =>
+    queryOptions({ queryKey: homeKeys.view(), queryFn: ({ signal }) => getHome(http, signal) }),
 }
 
 /** Rails de l'Accueil. */
-export function useHome(http: HttpClient) {
-  return useQuery({ queryKey: homeKeys.all(), queryFn: ({ signal }) => getHome(http, signal) })
+export function useHome() {
+  const { http } = useJoutio()
+  return useQuery(homeQueries.view(http))
 }

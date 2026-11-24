@@ -1,51 +1,71 @@
-import { skipToken, useQuery } from '@tanstack/react-query'
-import type { HttpClient } from '../../../core/http.js'
-import { getReportQueue, getTeam, getWorkshop, getWorkshopTodo } from '../services/authoring-query.service.js'
+import { useQuery } from '@tanstack/react-query'
+import { useJoutio } from '../../../core/runtime/context.js'
+import { sameNameTopic } from '../domain/topic-name.js'
+import { authoringQueries, SAME_NAME_MIN_LENGTH } from '../query/queries.js'
 
-/** Clés React Query de l'atelier, exportées pour les écritures transversales (`queryKeys`). */
-export const authoringKeys = {
-  /** Tout l'atelier (préfixe). */
-  all: () => ['authoring'] as const,
-  topics: () => ['authoring', 'topics'] as const,
-  created: () => ['authoring', 'created'] as const,
-  todo: () => ['authoring', 'todo'] as const,
-  /** Sujets publiés au nom proche, pour l'avertissement de doublon de « Nouveau sujet ». */
-  named: (query: string) => ['authoring', 'named', query] as const,
-  /** Tout l'atelier d'un sujet (préfixe). */
-  topic: (topicId: string) => ['authoring', topicId] as const,
-  workshop: (topicId: string) => ['authoring', topicId, 'workshop'] as const,
-  questions: (topicId: string) => ['authoring', topicId, 'questions'] as const,
-  reports: (topicId: string) => ['authoring', topicId, 'reports'] as const,
-  team: (topicId: string) => ['authoring', topicId, 'team'] as const,
-  /** Détails de signalement d'un sujet (préfixe). */
-  reportDetails: (topicId: string) => ['authoring', topicId, 'report-detail'] as const,
+/** File « À traiter » : questions en attente et signalements, par sujet géré. */
+export function useWorkshopTodo() {
+  const { http } = useJoutio()
+  return useQuery(authoringQueries.todo(http))
 }
 
-/** File « À traiter » : questions en attente et signalements. */
-export function useWorkshopTodo(http: HttpClient) {
-  return useQuery({ queryKey: authoringKeys.todo(), queryFn: ({ signal }) => getWorkshopTodo(http, signal) })
+/** Mes sujets : ceux où je contribue (créateur, admin, rédacteur), brouillons et publiés. */
+export function useContributedTopics() {
+  const { http } = useJoutio()
+  return useQuery(authoringQueries.contributed(http))
 }
 
-/** Tout l'atelier d'un sujet. */
-export function useWorkshop(http: HttpClient, topicId: string | undefined) {
-  return useQuery({
-    queryKey: authoringKeys.workshop(topicId ?? ''),
-    queryFn: topicId ? ({ signal }) => getWorkshop(http, topicId, signal) : skipToken,
-  })
+/** Sujets dont je suis le créateur : seuls comptent dans le plafond de sujets publiés. */
+export function useCreatedTopics() {
+  const { http } = useJoutio()
+  return useQuery(authoringQueries.created(http))
 }
 
-/** Équipe d'un sujet. */
-export function useTeam(http: HttpClient, topicId: string | undefined) {
-  return useQuery({
-    queryKey: authoringKeys.team(topicId ?? ''),
-    queryFn: topicId ? ({ signal }) => getTeam(http, topicId, signal) : skipToken,
-  })
+/** Tout l'atelier d'un sujet et mes droits dessus. */
+export function useWorkshop(topicId: string | undefined) {
+  const { http } = useJoutio()
+  return useQuery(authoringQueries.workshop(http, topicId))
+}
+
+/** Toutes les questions du sujet ; recherche et filtres se font dans l'app. */
+export function useTopicQuestions(topicId: string | undefined) {
+  const { http } = useJoutio()
+  return useQuery(authoringQueries.questions(http, topicId))
 }
 
 /** File des questions signalées d'un sujet. */
-export function useReportQueue(http: HttpClient, topicId: string | undefined) {
+export function useReportQueue(topicId: string | undefined) {
+  const { http } = useJoutio()
+  return useQuery(authoringQueries.reports(http, topicId))
+}
+
+/** Équipe d'un sujet. */
+export function useTeam(topicId: string | undefined) {
+  const { http } = useJoutio()
+  return useQuery(authoringQueries.team(http, topicId))
+}
+
+/** Détail d'un signalement. */
+export function useReportDetail(reportId: string | undefined) {
+  const { http } = useJoutio()
+  return useQuery(authoringQueries.reportDetail(http, reportId))
+}
+
+/** Signalements ouverts d'une question. */
+export function useQuestionReports(questionId: string | undefined) {
+  const { http } = useJoutio()
+  return useQuery(authoringQueries.questionReports(http, questionId))
+}
+
+/**
+ * Sujet publié qui porte déjà ce nom : avertissement non bloquant de « Nouveau sujet ». `name` arrive temporisé par
+ * l'app ; en dessous de 3 caractères, aucune requête.
+ */
+export function useSameNameTopic(name: string) {
+  const { http } = useJoutio()
+  const term = name.trim()
   return useQuery({
-    queryKey: authoringKeys.reports(topicId ?? ''),
-    queryFn: topicId ? ({ signal }) => getReportQueue(http, topicId, signal) : skipToken,
+    ...authoringQueries.named(http, term),
+    select: (page) => (term.length >= SAME_NAME_MIN_LENGTH ? sameNameTopic(term, page.content) : undefined),
   })
 }

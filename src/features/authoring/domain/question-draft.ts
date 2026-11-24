@@ -1,6 +1,12 @@
 import type { Language } from '../../../core/types/common.js'
 import { contentFor } from '../authoring.js'
-import { QUESTION_CHOICES, type CreateQuestionInput, type QuestionAnswer, type QuestionChoice, type QuestionEditorView } from '../types.js'
+import {
+  QUESTION_CHOICES,
+  type CreateQuestionInput,
+  type QuestionAnswer,
+  type QuestionChoice,
+  type QuestionEditorView,
+} from '../types.js'
 
 export type Localized = Record<Language, string>
 const EMPTY_ANSWERS = ['', '', '', ''] as const
@@ -21,7 +27,11 @@ export interface QuestionDraft {
 
 export type TranslationStatus = 'none' | 'partial' | 'complete'
 
-export const TRANSLATION_STATUS_LABEL: Record<TranslationStatus, string> = { none: 'Facultative', partial: 'À terminer', complete: 'Complète' }
+export const TRANSLATION_STATUS_LABEL: Record<TranslationStatus, string> = {
+  none: 'Facultative',
+  partial: 'À terminer',
+  complete: 'Complète',
+}
 
 export function emptyDraft(): QuestionDraft {
   return { texts: { fr: '', en: '' }, answers: { fr: EMPTY_ANSWERS, en: EMPTY_ANSWERS }, alt: { fr: '', en: '' } }
@@ -54,16 +64,23 @@ export function translationStatus(draft: QuestionDraft): TranslationStatus {
 }
 
 /** Français complet : question et quatre réponses. */
-export const frenchFilled = (draft: QuestionDraft) => draft.texts.fr.trim() !== '' && filledCount(draft.answers.fr) === 4
+export const frenchFilled = (draft: QuestionDraft) =>
+  draft.texts.fr.trim() !== '' && filledCount(draft.answers.fr) === 4
 
 /**
  * Description d'image manquante : exigée en français pour une image **choisie dans cet éditeur**. Une image déjà
  * enregistrée sans description (questions antérieures, seed) ne bloque pas la modification du reste.
  */
-export const missingAlt = (draft: QuestionDraft, imageChanged: boolean) => Boolean(draft.imageUrl) && imageChanged && draft.alt.fr.trim() === ''
+export const missingAlt = (draft: QuestionDraft, imageChanged: boolean) =>
+  Boolean(draft.imageUrl) && imageChanged && draft.alt.fr.trim() === ''
 
 export function isReady(draft: QuestionDraft, imageChanged: boolean) {
-  return frenchFilled(draft) && draft.correct !== undefined && translationStatus(draft) !== 'partial' && !missingAlt(draft, imageChanged)
+  return (
+    frenchFilled(draft) &&
+    draft.correct !== undefined &&
+    translationStatus(draft) !== 'partial' &&
+    !missingAlt(draft, imageChanged)
+  )
 }
 
 const choiceAt = (index: number): QuestionChoice => QUESTION_CHOICES[index] ?? 'A'
@@ -84,7 +101,12 @@ function altOf(draft: QuestionDraft, language: Language): string | null {
 
 export function toCreateInput(draft: QuestionDraft): CreateQuestionInput {
   return {
-    contents: languages(draft).map((language) => ({ language, text: draft.texts[language].trim(), answers: answersOf(draft, language), imageAlt: altOf(draft, language) })),
+    contents: languages(draft).map((language) => ({
+      language,
+      text: draft.texts[language].trim(),
+      answers: answersOf(draft, language),
+      imageAlt: altOf(draft, language),
+    })),
     correctAnswer: choiceAt(draft.correct ?? 0),
     imageUrl: draft.imageUrl ?? null,
   }

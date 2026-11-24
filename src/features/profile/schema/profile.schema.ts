@@ -6,7 +6,6 @@ import { pseudonymIssue, type PseudonymIssue } from '../domain/pseudonym.js'
 /** Bio du profil (miroir de `joutio-profile`). */
 export const MAX_BIO = 160
 
-
 export const PSEUDONYM_ISSUE_KEYS: Record<PseudonymIssue, MessageKey> = {
   tooShort: 'settings.pseudonymTooShort',
   tooLong: 'settings.pseudonymTooLong',
@@ -31,6 +30,10 @@ export const birthDateSchema = (today: string) =>
   z.object({
     birthDate: z.string().superRefine((value, context) => {
       const issue = birthDateIssue(value, today)
-      if (issue) context.addIssue({ code: 'custom', message: issue === 'underage' ? 'tooYoung.title' : 'account.birthDateInvalid' })
+      if (issue)
+        context.addIssue({
+          code: 'custom',
+          message: issue === 'underage' ? 'tooYoung.title' : 'account.birthDateInvalid',
+        })
     }),
   })

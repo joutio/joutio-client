@@ -134,6 +134,7 @@ export const avatarFr = {
     cancel: 'Annuler',
     save: 'Valider',
     saving: 'Enregistrement…',
-    credits: 'Avatars générés avec DiceBear. Style Micah © Micah Lanier (CC BY 4.0) ; styles Lorelei et Notionists en CC0.',
+    credits:
+      'Avatars générés avec DiceBear. Style Micah © Micah Lanier (CC BY 4.0) ; styles Lorelei et Notionists en CC0.',
   },
 }

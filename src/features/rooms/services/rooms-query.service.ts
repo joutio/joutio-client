@@ -21,6 +21,9 @@ export async function getRoomEvents(http: HttpClient, roomId: string): Promise<E
 }
 
 /** Historique des événements d'un ticket d'appariement (rejeu REST du stream). */
-export async function getMatchmakingEvents(http: HttpClient, ticketId: string): Promise<EventEnvelope<MatchmakingEvent>[]> {
+export async function getMatchmakingEvents(
+  http: HttpClient,
+  ticketId: string,
+): Promise<EventEnvelope<MatchmakingEvent>[]> {
   return http.get<EventEnvelope<MatchmakingEvent>[]>(`/api/matchmaking/tickets/${segment(ticketId)}/events`)
 }

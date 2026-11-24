@@ -15,7 +15,15 @@ export interface NotificationPreferenceView {
 /** Notification personnelle (`NotificationView` du BFF), lue via `/api/notifications` et poussée sur `/topic/notifications/{userId}`. */
 export interface NotificationView {
   notificationId: string
-  type: 'FOLLOW' | 'CHALLENGE_RECEIVED' | 'CHALLENGE_DECLINED' | 'ROOM_ACCEPTED' | 'WIZZ' | 'QUESTION_REPORTED' | 'TOPIC_DRAFTED' | 'ACCOUNT_SUSPENDED'
+  type:
+    | 'FOLLOW'
+    | 'CHALLENGE_RECEIVED'
+    | 'CHALLENGE_DECLINED'
+    | 'ROOM_ACCEPTED'
+    | 'WIZZ'
+    | 'QUESTION_REPORTED'
+    | 'TOPIC_DRAFTED'
+    | 'ACCOUNT_SUSPENDED'
   actorId: string | null
   /** Défi (`CHALLENGE_*`), salle (`ROOM_ACCEPTED`)… */
   sourceId: string | null
@@ -29,5 +37,4 @@ export interface NotificationView {
 
 /** Événement reçu sur le flux de l'inbox personnelle. */
 export type PersonalNotificationEvent =
-  | { type: 'created'; notification: NotificationView }
-  | { type: 'deleted'; notificationId: string }
+  { type: 'created'; notification: NotificationView } | { type: 'deleted'; notificationId: string }

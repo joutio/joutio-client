@@ -24,7 +24,9 @@ export function languageOf(locale: string | null | undefined): Language {
 /** Texte d'une clé dans `language` (le français à défaut), avec ses `{valeurs}` interpolées. */
 export function translate(language: Language, key: MessageKey, values?: MessageValues): string {
   const template = dictionaries[language]?.[key] ?? fr[key] ?? key
-  return values ? template.replace(/\{(\w+)\}/g, (match, name: string) => (name in values ? String(values[name]) : match)) : template
+  return values
+    ? template.replace(/\{(\w+)\}/g, (match, name: string) => (name in values ? String(values[name]) : match))
+    : template
 }
 
 /** Vrai si `key` existe dans les dictionnaires : clé construite à partir d'un code serveur (`reason.${code}`). */
@@ -33,7 +35,8 @@ export function isMessageKey(key: string): key is MessageKey {
 }
 
 /** Clé du libellé d'un palier (`tier.OR`) ; `tokens.tier[*].label` reste le français du lab. */
-export const tierKey = (tier: string): MessageKey => (isMessageKey(`tier.${tier}`) ? (`tier.${tier}` as MessageKey) : 'tier.FER')
+export const tierKey = (tier: string): MessageKey =>
+  isMessageKey(`tier.${tier}`) ? (`tier.${tier}` as MessageKey) : 'tier.FER'
 
 /** Clé du libellé d'un univers (`category.SCIENCE`), `category.GENERAL` pour un code inconnu. */
 export const categoryKey = (category: string | null | undefined): MessageKey =>

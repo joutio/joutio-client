@@ -29,7 +29,12 @@ const round: GameEvent = {
   imageUrl: null,
   difficulty: 'EASY',
   answers: { A: 'Louis XIII', B: 'Louis XIV', C: 'Louis XV', D: 'Henri IV' },
-  translations: { en: { text: 'Who was called the Sun King?', answers: { A: 'Louis XIII', B: 'Louis XIV', C: 'Louis XV', D: 'Henry IV' } } },
+  translations: {
+    en: {
+      text: 'Who was called the Sun King?',
+      answers: { A: 'Louis XIII', B: 'Louis XIV', C: 'Louis XV', D: 'Henry IV' },
+    },
+  },
   bonus: false,
   shownAt: '2026-11-11T10:00:00.000Z',
   revealAt: '2026-11-11T10:00:01.400Z',
@@ -40,10 +45,44 @@ describe('Game.onGameEvent', () => {
     const game = fold([
       created,
       round,
-      { type: 'QUESTION_REVEALED', gameId: 'g1', round: '0', revealedAt: '2026-11-11T10:00:01.400Z', answerDeadlineAt: '2026-11-11T10:00:11.400Z' },
-      { type: 'PLAYER_ANSWERED', gameId: 'g1', round: '0', playerId: 'p1', choice: 'B', correct: true, pointsEarned: 17, answeredAt: '2026-11-11T10:00:04.400Z', timeMs: 3000 },
-      { type: 'PLAYER_ANSWERED', gameId: 'g1', round: '0', playerId: 'p2', choice: 'A', correct: false, pointsEarned: 0, answeredAt: '2026-11-11T10:00:06.400Z', timeMs: 5000 },
-      { type: 'ROUND_CLOSED', gameId: 'g1', closedRound: '0', nextRound: '1', correctAnswer: 'B', closedAt: '2026-11-11T10:00:06.400Z', nextRoundAt: '2026-11-11T10:00:10.000Z' },
+      {
+        type: 'QUESTION_REVEALED',
+        gameId: 'g1',
+        round: '0',
+        revealedAt: '2026-11-11T10:00:01.400Z',
+        answerDeadlineAt: '2026-11-11T10:00:11.400Z',
+      },
+      {
+        type: 'PLAYER_ANSWERED',
+        gameId: 'g1',
+        round: '0',
+        playerId: 'p1',
+        choice: 'B',
+        correct: true,
+        pointsEarned: 17,
+        answeredAt: '2026-11-11T10:00:04.400Z',
+        timeMs: 3000,
+      },
+      {
+        type: 'PLAYER_ANSWERED',
+        gameId: 'g1',
+        round: '0',
+        playerId: 'p2',
+        choice: 'A',
+        correct: false,
+        pointsEarned: 0,
+        answeredAt: '2026-11-11T10:00:06.400Z',
+        timeMs: 5000,
+      },
+      {
+        type: 'ROUND_CLOSED',
+        gameId: 'g1',
+        closedRound: '0',
+        nextRound: '1',
+        correctAnswer: 'B',
+        closedAt: '2026-11-11T10:00:06.400Z',
+        nextRoundAt: '2026-11-11T10:00:10.000Z',
+      },
     ])
     expect(game.player1Name).toBe('Nadjim')
     expect(game.questionImageUrls).toEqual(['https://media.joutio.com/q1.jpg'])
@@ -56,7 +95,10 @@ describe('Game.onGameEvent', () => {
   })
 
   it('takes the authoritative final scores and winner at the end', () => {
-    const game = fold([created, { type: 'GAME_ENDED', gameId: 'g1', winnerId: 'p2', player1FinalScore: 80, player2FinalScore: 95 }])
+    const game = fold([
+      created,
+      { type: 'GAME_ENDED', gameId: 'g1', winnerId: 'p2', player1FinalScore: 80, player2FinalScore: 95 },
+    ])
     expect(game.status).toBe('FINISHED')
     expect([game.player1Score, game.player2Score]).toEqual([80, 95])
     expect(game.winnerId).toBe('p2')
@@ -79,7 +121,12 @@ describe('localizedQuestion', () => {
   it('reads the image description in the player language, then falls back to the source one', () => {
     const game = fold([
       created,
-      { ...round, imageUrl: 'https://img/x.webp', imageAlt: 'Portrait de Louis XIV', translations: { en: { text: 'Who?', answers: {}, imageAlt: 'Portrait of Louis XIV' } } },
+      {
+        ...round,
+        imageUrl: 'https://img/x.webp',
+        imageAlt: 'Portrait de Louis XIV',
+        translations: { en: { text: 'Who?', answers: {}, imageAlt: 'Portrait of Louis XIV' } },
+      },
     ])
     expect(localizedQuestion(game.rounds['0'], 'en').imageAlt).toBe('Portrait of Louis XIV')
     expect(localizedQuestion(game.rounds['0'], 'fr').imageAlt).toBe('Portrait de Louis XIV')

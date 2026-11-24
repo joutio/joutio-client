@@ -16,12 +16,20 @@ export async function acceptTerms(http: HttpClient, version: string, signal?: Ab
 }
 
 /** `PUT /api/me/interests` : centres d'intérêt (codes d'univers ordonnés, 3 au plus). */
-export async function updateInterests(http: HttpClient, interests: readonly string[], signal?: AbortSignalLike): Promise<void> {
+export async function updateInterests(
+  http: HttpClient,
+  interests: readonly string[],
+  signal?: AbortSignalLike,
+): Promise<void> {
   return http.put<void>('/api/me/interests', { body: { interests }, signal })
 }
 
 /** `PUT /api/me` : édition du profil (pseudonyme, bio, pays). */
-export async function updateProfile(http: HttpClient, command: { pseudonym: string; bio: string; country: string | null }, signal?: AbortSignalLike): Promise<MeView> {
+export async function updateProfile(
+  http: HttpClient,
+  command: { pseudonym: string; bio: string; country: string | null },
+  signal?: AbortSignalLike,
+): Promise<MeView> {
   return http.put<MeView>('/api/me', { body: command, signal })
 }
 
@@ -36,7 +44,11 @@ export async function requestDeletionCode(http: HttpClient, signal?: AbortSignal
 }
 
 /** `PUT /api/profiles/{id}/language` : langue du compte. */
-export async function updateLanguage(http: HttpClient, userId: string, language: Language, signal?: AbortSignalLike): Promise<void> {
+export async function updateLanguage(
+  http: HttpClient,
+  userId: string,
+  language: Language,
+  signal?: AbortSignalLike,
+): Promise<void> {
   return http.put<void>(`/api/profiles/${segment(userId)}/language`, { body: { language }, signal })
 }
-

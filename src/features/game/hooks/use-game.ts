@@ -1,39 +1,38 @@
-import {skipToken, useQuery} from '@tanstack/react-query'
-import type {HttpClient} from '../../../core/http.js'
-import {getActiveGames, getGameResult, getServerTime} from '../services/game-query.service.js'
+import { queryOptions, skipToken, useQuery } from '@tanstack/react-query'
+import type { HttpClient } from '../../../core/http.js'
+import { useJoutio } from '../../../core/runtime/context.js'
+import { getActiveGames, getGameResult, getServerTime } from '../services/game-query.service.js'
+import { gameKeys } from '../query/keys.js'
 
-/** Clés React Query des parties, exportées pour les écritures transversales (`queryKeys`). */
-export const gamesKeys = {
-    /** Toutes les listes de parties en cours (préfixe). */
-    activeAll: () => ['games', 'active'] as const,
-    /** Parties en cours du joueur (`/api/games?active=true`). */
-    active: (userId: string) => ['games', 'active', userId] as const,
-    result: (gameId: string) => ['games', gameId, 'result'] as const,
-    streakUnlock: (gameId: string) => ['games', gameId, 'streak-unlock'] as const,
-}
-
-/** Horloge du serveur (`GET /api/clock`). */
-export const serverTimeKeys = {
-    all: () => ['server-time'] as const,
+export const gameQueries = {
+  serverTime: (http: HttpClient) =>
+    queryOptions({ queryKey: gameKeys.serverTime(), queryFn: ({ signal }) => getServerTime(http, signal) }),
+  active: (http: HttpClient, userId: string | undefined) =>
+    queryOptions({
+      queryKey: gameKeys.active(userId),
+      queryFn: userId ? ({ signal }) => getActiveGames(http, signal) : skipToken,
+    }),
+  result: (http: HttpClient, gameId: string | undefined) =>
+    queryOptions({
+      queryKey: gameKeys.result(gameId),
+      queryFn: gameId ? ({ signal }) => getGameResult(http, gameId, signal) : skipToken,
+    }),
 }
 
 /** Horloge du serveur. */
-export function useServerTime(http: HttpClient) {
-    return useQuery({queryKey: serverTimeKeys.all(), queryFn: ({signal}) => getServerTime(http, signal)})
+export function useServerTime() {
+  const { http } = useJoutio()
+  return useQuery(gameQueries.serverTime(http))
 }
 
 /** Parties en cours du joueur (bannière « Rejoindre »). */
-export function useActiveGames(http: HttpClient, userId: string | undefined) {
-    return useQuery({
-        queryKey: gamesKeys.active(userId ?? ''),
-        queryFn: userId ? ({signal}) => getActiveGames(http, signal) : skipToken,
-    })
+export function useActiveGames(userId: string | undefined) {
+  const { http } = useJoutio()
+  return useQuery(gameQueries.active(http, userId))
 }
 
-/** Résultat d'un duel (`GET /api/games/{id}/result`), revue des manches comprise. */
-export function useGameResult(http: HttpClient, gameId: string | undefined) {
-    return useQuery({
-        queryKey: gamesKeys.result(gameId ?? ''),
-        queryFn: gameId ? ({signal}) => getGameResult(http, gameId, signal) : skipToken,
-    })
+/** Résultat d'un duel, revue des manches comprise. */
+export function useGameResult(gameId: string | undefined) {
+  const { http } = useJoutio()
+  return useQuery(gameQueries.result(http, gameId))
 }

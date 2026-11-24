@@ -17,6 +17,9 @@ describe('topicDescription', () => {
 
   it('prepares one draft per language', () => {
     expect(descriptionsDraft({ description: 'Ancienne' })).toEqual({ fr: 'Ancienne', en: '' })
-    expect(descriptionsDraft({ description: 'Fr', descriptions: { fr: 'Fr', en: 'En' } })).toEqual({ fr: 'Fr', en: 'En' })
+    expect(descriptionsDraft({ description: 'Fr', descriptions: { fr: 'Fr', en: 'En' } })).toEqual({
+      fr: 'Fr',
+      en: 'En',
+    })
   })
 })

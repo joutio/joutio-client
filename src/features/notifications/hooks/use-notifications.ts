@@ -1,37 +1,46 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { infiniteQueryOptions, queryOptions, useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import type { HttpClient } from '../../../core/http.js'
-import { getNotificationPreferences, getNotificationsPage, NOTIFICATIONS_PAGE_SIZE, getUnreadCount } from '../services/notifications-query.service.js'
+import { MAX_PAGES, nextPage } from '../../../core/query/pages.js'
+import { useJoutio } from '../../../core/runtime/context.js'
+import {
+  getNotificationPreferences,
+  getNotificationsPage,
+  getUnreadCount,
+} from '../services/notifications-query.service.js'
+import { notificationKeys } from '../query/keys.js'
 
-/** Clés React Query des notifications, exportées pour les écritures transversales (`queryKeys`). */
-export const notificationsKeys = {
-  /** Tout ce qui concerne la boîte de réception (préfixe). */
-  all: () => ['notifications'] as const,
-  list: () => ['notifications', 'list'] as const,
-  unreadCount: () => ['notifications', 'unread-count'] as const,
-}
-
-export const notificationPreferencesKeys = {
-  all: () => ['notification-preferences'] as const,
-}
-
-/** Pastille non-lue de la cloche. */
-export function useUnreadCount(http: HttpClient) {
-  return useQuery({ queryKey: notificationsKeys.unreadCount(), queryFn: ({ signal }) => getUnreadCount(http, signal) })
-}
-
-/** Préférences de notification du joueur. */
-export function useNotificationPreferences(http: HttpClient) {
-  return useQuery({ queryKey: notificationPreferencesKeys.all(), queryFn: ({ signal }) => getNotificationPreferences(http, signal) })
+export const notificationQueries = {
+  list: (http: HttpClient) =>
+    infiniteQueryOptions({
+      queryKey: notificationKeys.list(),
+      queryFn: ({ pageParam, signal }) => getNotificationsPage(http, pageParam, signal),
+      initialPageParam: 0,
+      getNextPageParam: nextPage,
+      maxPages: MAX_PAGES,
+    }),
+  unreadCount: (http: HttpClient) =>
+    queryOptions({ queryKey: notificationKeys.unreadCount(), queryFn: ({ signal }) => getUnreadCount(http, signal) }),
+  preferences: (http: HttpClient) =>
+    queryOptions({
+      queryKey: notificationKeys.preferences(),
+      queryFn: ({ signal }) => getNotificationPreferences(http, signal),
+    }),
 }
 
 /** Boîte de réception, paginée. */
-export function useNotifications(http: HttpClient) {
-  return useInfiniteQuery({
-    queryKey: notificationsKeys.list(),
-    queryFn: ({ pageParam, signal }) => getNotificationsPage(http, pageParam, signal),
-    initialPageParam: 0,
-    getNextPageParam: (last) => (last.last ? undefined : last.page + 1),
-    staleTime: 15_000,
-    meta: { pageSize: NOTIFICATIONS_PAGE_SIZE },
-  })
+export function useNotifications() {
+  const { http } = useJoutio()
+  return useInfiniteQuery(notificationQueries.list(http))
+}
+
+/** Pastille non-lue de la cloche. */
+export function useUnreadCount() {
+  const { http } = useJoutio()
+  return useQuery(notificationQueries.unreadCount(http))
+}
+
+/** Préférences de notification du joueur. */
+export function useNotificationPreferences() {
+  const { http } = useJoutio()
+  return useQuery(notificationQueries.preferences(http))
 }

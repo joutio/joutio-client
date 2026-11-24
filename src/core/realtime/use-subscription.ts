@@ -1,28 +1,30 @@
 import { useEffect, useRef } from 'react'
-import type { RealtimeTransport } from './transport.js'
+import { useJoutio } from '../runtime/context.js'
 
 /**
- * Abonnement éphémère à une destination : aucun historique, aucun fold — chaque trame est
- * transformée par `parse` puis remise au `handler`. `onReconnect` (optionnel) est rappelé à chaque
- * **re**connexion (pas la connexion initiale), pour resynchroniser les vues qu'un flux sans
- * historique ne peut pas rattraper. `destination` à `null`/`undefined` : aucun abonnement.
+ * Abonnement éphémère à une destination : aucun historique, aucun repli. Chaque trame est transformée par `parse`
+ * puis remise au `handler` ; une trame illisible (`undefined`) est ignorée. `onReconnect` est rappelé à chaque
+ * **re**connexion (pas la première), pour resynchroniser ce qu'un flux sans historique ne rattrape pas.
+ * `destination` absente : aucun abonnement.
  *
- * Les callbacks sont lus via des refs : ils peuvent changer à chaque rendu sans réabonner.
+ * Les callbacks sont lus par référence : ils peuvent changer à chaque rendu sans réabonner.
  */
 export function useSubscription<T>(
-  subscribe: RealtimeTransport['subscribe'],
   destination: string | null | undefined,
   parse: (body: string) => T | undefined,
   handler: (event: T) => void,
   onReconnect?: () => void,
 ) {
+  const { realtime } = useJoutio()
   const parseRef = useRef(parse)
-  parseRef.current = parse
   const handlerRef = useRef(handler)
-  handlerRef.current = handler
   const onReconnectRef = useRef(onReconnect)
-  onReconnectRef.current = onReconnect
-  const hasOnReconnect = onReconnect !== undefined
+  useEffect(() => {
+    parseRef.current = parse
+    handlerRef.current = handler
+    onReconnectRef.current = onReconnect
+  })
+  const resyncs = onReconnect !== undefined
 
   useEffect(() => {
     if (!destination) return
@@ -31,14 +33,25 @@ export function useSubscription<T>(
       if (connected) onReconnectRef.current?.()
       connected = true
     }
-    return subscribe(
+    return realtime.subscribe(
       destination,
       (message) => {
         const event = parseRef.current(message.body)
         if (event !== undefined) handlerRef.current(event)
       },
-      hasOnReconnect ? onConnect : undefined,
+      resyncs ? onConnect : undefined,
     )
-    // La destination seule pilote l'abonnement ; les callbacks sont lus via refs.
-  }, [subscribe, destination, hasOnReconnect])
+  }, [realtime, destination, resyncs])
+}
+
+/** Lit une enveloppe `{ eventType, payload }` du BFF ; `undefined` si la trame est illisible. */
+export function parseEnvelope(body: string): { eventType?: string; payload?: unknown } | undefined {
+  try {
+    const value = JSON.parse(body) as unknown
+    return typeof value === 'object' && value !== null
+      ? (value as { eventType?: string; payload?: unknown })
+      : undefined
+  } catch {
+    return undefined
+  }
 }

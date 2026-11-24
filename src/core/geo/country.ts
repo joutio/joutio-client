@@ -74,12 +74,18 @@ export function searchCountries(query: string, language = 'fr'): CountryOption[]
 
 /** Région d'une locale BCP 47 (`fr-FR` → `FR`, `en_GB` → `GB`) ; `null` si absente ou inconnue. */
 export function regionOfLocale(locale: string | null | undefined): CountryCode | null {
-  const region = locale?.split(/[-_]/).find((part, index) => index > 0 && /^[A-Za-z]{2}$/.test(part))?.toUpperCase()
+  const region = locale
+    ?.split(/[-_]/)
+    .find((part, index) => index > 0 && /^[A-Za-z]{2}$/.test(part))
+    ?.toUpperCase()
   return isCountryCode(region) ? region : null
 }
 
 /** Suggestions du sélecteur : pays de l'appareil d'abord, puis les pays les plus joués, sans doublon. */
-export function suggestedCountries(deviceRegion?: string | null, popular: readonly CountryCode[] = POPULAR_COUNTRIES): CountryCode[] {
+export function suggestedCountries(
+  deviceRegion?: string | null,
+  popular: readonly CountryCode[] = POPULAR_COUNTRIES,
+): CountryCode[] {
   const device = deviceRegion?.toUpperCase()
   const first = isCountryCode(device) ? [device] : []
   return [...new Set<CountryCode>([...first, ...popular])]

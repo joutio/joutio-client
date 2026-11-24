@@ -5,11 +5,15 @@ const TODAY = '2026-11-13'
 
 describe('streakDayUnlocked', () => {
   it('counts the game once projected: one game today', () => {
-    expect(streakDayUnlocked({ currentStreak: 4, lastActiveDate: TODAY, days: [{ date: TODAY, games: 1 }] }, TODAY)).toBe(4)
+    expect(
+      streakDayUnlocked({ currentStreak: 4, lastActiveDate: TODAY, days: [{ date: TODAY, games: 1 }] }, TODAY),
+    ).toBe(4)
   })
 
   it('ignores a second game of the day', () => {
-    expect(streakDayUnlocked({ currentStreak: 4, lastActiveDate: TODAY, days: [{ date: TODAY, games: 2 }] }, TODAY)).toBeNull()
+    expect(
+      streakDayUnlocked({ currentStreak: 4, lastActiveDate: TODAY, days: [{ date: TODAY, games: 2 }] }, TODAY),
+    ).toBeNull()
   })
 
   it('anticipates a projection that lags: yesterday extends, older restarts', () => {

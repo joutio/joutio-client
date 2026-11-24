@@ -47,7 +47,10 @@ export const CLOCK_BURST = 5
 export const emptyClock: ClockState = { samples: [], floorMs: null }
 
 const bestSample = (samples: readonly ClockSample[]) =>
-  samples.reduce<ClockSample | null>((best, sample) => (best === null || sample.rttMs < best.rttMs ? sample : best), null)
+  samples.reduce<ClockSample | null>(
+    (best, sample) => (best === null || sample.rttMs < best.rttMs ? sample : best),
+    null,
+  )
 
 /** Décalage courant `serveur − appareil` (ms), `null` avant toute mesure. */
 export function clockOffset(state: ClockState): number | null {
@@ -59,13 +62,22 @@ export function clockOffset(state: ClockState): number | null {
 /** Ajoute un aller-retour `GET /api/clock`. */
 export function addRoundTrip(state: ClockState, { sentAt, receivedAt, serverEpochMs }: RoundTrip): ClockState {
   if (!Number.isFinite(serverEpochMs) || receivedAt < sentAt) return state
-  const sample: ClockSample = { offsetMs: serverEpochMs - (sentAt + receivedAt) / 2, rttMs: receivedAt - sentAt, at: receivedAt }
+  const sample: ClockSample = {
+    offsetMs: serverEpochMs - (sentAt + receivedAt) / 2,
+    rttMs: receivedAt - sentAt,
+    at: receivedAt,
+  }
   const current = clockOffset(state)
   // Le vrai décalage est certainement dans [serveur − réception, serveur − envoi] : une estimation hors de cet
   // intervalle (marge comprise) vient d'une montre d'appareil déplacée, l'historique ne vaut plus rien.
-  const jumped = current !== null && (current < serverEpochMs - receivedAt - CLOCK_JUMP_MARGIN_MS || current > serverEpochMs - sentAt + CLOCK_JUMP_MARGIN_MS)
+  const jumped =
+    current !== null &&
+    (current < serverEpochMs - receivedAt - CLOCK_JUMP_MARGIN_MS ||
+      current > serverEpochMs - sentAt + CLOCK_JUMP_MARGIN_MS)
   if (jumped) return { samples: [sample], floorMs: null }
-  const samples = [...state.samples.filter((kept) => receivedAt - kept.at <= CLOCK_MAX_AGE_MS), sample].slice(-CLOCK_WINDOW)
+  const samples = [...state.samples.filter((kept) => receivedAt - kept.at <= CLOCK_MAX_AGE_MS), sample].slice(
+    -CLOCK_WINDOW,
+  )
   return { samples, floorMs: state.floorMs }
 }
 

@@ -11,7 +11,8 @@ import {
   userReportSchema,
 } from './authoring.schema.js'
 
-const messages = (result: { success: boolean; error?: { issues: { message: string }[] } }) => result.error?.issues.map((issue) => issue.message) ?? []
+const messages = (result: { success: boolean; error?: { issues: { message: string }[] } }) =>
+  result.error?.issues.map((issue) => issue.message) ?? []
 
 describe('form schemas', () => {
   it('validates the login e-mail and trims it', () => {
@@ -33,8 +34,12 @@ describe('form schemas', () => {
 
   it('reuses the pseudonym rules and bounds the bio', () => {
     expect(profileSchema.safeParse({ pseudonym: 'Nadia_42', bio: '', country: 'FR' }).success).toBe(true)
-    expect(messages(profileSchema.safeParse({ pseudonym: '4me', bio: '', country: null }))).toEqual(['settings.pseudonymFirstLetter'])
-    expect(messages(profileSchema.safeParse({ pseudonym: 'Nadia', bio: 'x'.repeat(161), country: null }))).toEqual(['form.tooLong'])
+    expect(messages(profileSchema.safeParse({ pseudonym: '4me', bio: '', country: null }))).toEqual([
+      'settings.pseudonymFirstLetter',
+    ])
+    expect(messages(profileSchema.safeParse({ pseudonym: 'Nadia', bio: 'x'.repeat(161), country: null }))).toEqual([
+      'form.tooLong',
+    ])
   })
 
   it('requires a topic name and a reject reason', () => {
@@ -49,7 +54,12 @@ describe('form schemas', () => {
 
   it('accepts a question only when ready', () => {
     expect(messages(questionDraftSchema().safeParse(emptyDraft()))).toEqual(['form.questionIncomplete'])
-    const ready = { ...emptyDraft(), texts: { fr: 'Capitale de la France ?', en: '' }, answers: { fr: ['Paris', 'Lyon', 'Nice', 'Lille'], en: ['', '', '', ''] }, correct: 0 }
+    const ready = {
+      ...emptyDraft(),
+      texts: { fr: 'Capitale de la France ?', en: '' },
+      answers: { fr: ['Paris', 'Lyon', 'Nice', 'Lille'], en: ['', '', '', ''] },
+      correct: 0,
+    }
     expect(questionDraftSchema().safeParse(ready).success).toBe(true)
     // Image choisie ici : sa description est exigée ; l'image déjà enregistrée n'en a pas besoin.
     const withImage = { ...ready, imageUrl: 'https://media/new.jpg' }
@@ -59,7 +69,15 @@ describe('form schemas', () => {
 
   it('needs a report reason, and a motivated, good-faith content notice', () => {
     expect(messages(userReportSchema.safeParse({ reasons: [], comment: '' }))).toEqual(['form.reasonRequired'])
-    expect(contentNoticeSchema.safeParse({ category: 'COPYRIGHT', description: 'Image reprise sans autorisation.', goodFaith: true }).success).toBe(true)
-    expect(messages(contentNoticeSchema.safeParse({ category: 'COPYRIGHT', description: 'trop court', goodFaith: false }))).toEqual(['form.tooShort', 'form.required'])
+    expect(
+      contentNoticeSchema.safeParse({
+        category: 'COPYRIGHT',
+        description: 'Image reprise sans autorisation.',
+        goodFaith: true,
+      }).success,
+    ).toBe(true)
+    expect(
+      messages(contentNoticeSchema.safeParse({ category: 'COPYRIGHT', description: 'trop court', goodFaith: false })),
+    ).toEqual(['form.tooShort', 'form.required'])
   })
 })

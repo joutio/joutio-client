@@ -1,34 +1,36 @@
 // @vitest-environment jsdom
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { renderHook, waitFor } from '@testing-library/react'
-import { createElement, type ReactNode } from 'react'
-import { expect, it, vi } from 'vitest'
-import type { HttpClient } from '../../../core/http.js'
-import type { PeopleSort } from '../../profile/types.js'
+import { waitFor } from '@testing-library/react'
+import { expect, it } from 'vitest'
+import { fakeHttp, renderWithJoutio } from '../../../testing/joutio.js'
 import { useContacts } from '../hooks/use-contacts.js'
-import type { ContactDirection } from '../types.js'
+import type { ContactsList } from '../types.js'
 
-it('garde la liste pendant un tri du même joueur et efface le résultat lors d’un changement de liste', async () => {
-  const client = new QueryClient()
-  const get = vi.fn().mockResolvedValueOnce({ content: [], page: 0, last: true }).mockImplementation(() => new Promise(() => {}))
-  const http = { get } as unknown as HttpClient
-  const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryClientProvider, { client }, children)
-  const initialProps: { userId: string | undefined; direction: ContactDirection; sort: PeopleSort } =
-    { userId: 'a', direction: 'followers', sort: 'ALPHA' }
-  const { result, rerender } = renderHook(
-    ({ userId, direction, sort }) => useContacts(http, userId, direction, '', sort),
-    { initialProps, wrapper },
-  )
+it('keeps the list while sorting the same player, and clears it when the list changes', async () => {
+  let first = true
+  const http = fakeHttp({
+    get: () => {
+      if (!first) return new Promise(() => {})
+      first = false
+      return { content: [], page: 0, last: true }
+    },
+  })
+  const initial: ContactsList = { userId: 'a', direction: 'followers', query: '', sort: 'ALPHA' }
+  let current = initial
+  const { result, rerender } = renderWithJoutio(() => useContacts(current), { http })
 
   await waitFor(() => expect(result.current.isSuccess).toBe(true))
-  rerender({ ...initialProps, sort: 'RECENT' })
+  current = { ...initial, sort: 'RECENT' }
+  rerender()
   expect(result.current.isPlaceholderData).toBe(true)
-  rerender({ ...initialProps, direction: 'following' })
+  current = { ...initial, direction: 'following' }
+  rerender()
   expect(result.current.data).toBeUndefined()
-  rerender({ ...initialProps, userId: 'b' })
+  current = { ...initial, userId: 'b' }
+  rerender()
   expect(result.current.data).toBeUndefined()
-  const calls = get.mock.calls.length
-  rerender({ ...initialProps, userId: undefined })
+  const calls = http.get.mock.calls.length
+  current = { ...initial, userId: undefined }
+  rerender()
   expect(result.current.data).toBeUndefined()
-  expect(get).toHaveBeenCalledTimes(calls)
+  expect(http.get).toHaveBeenCalledTimes(calls)
 })

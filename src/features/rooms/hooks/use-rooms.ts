@@ -1,30 +1,49 @@
-import { skipToken, useQuery } from '@tanstack/react-query'
+import { queryOptions, skipToken, useQuery } from '@tanstack/react-query'
 import type { HttpClient } from '../../../core/http.js'
+import { useJoutio } from '../../../core/runtime/context.js'
+import { defisSections, incomingRematch, pendingInvitations, roomsWaitingForViewer } from '../domain/room-view.js'
 import { getMyRooms, getRoom } from '../services/rooms-query.service.js'
+import { roomKeys } from '../query/keys.js'
 
-/** Clés React Query des salles, exportées pour les écritures transversales (`queryKeys`). */
-export const roomsKeys = {
-  /** Salles du joueur (`/api/rooms/mine`) : Défis, sa pastille et la reprise de partie. */
-  myRooms: () => ['rooms', 'mine'] as const,
-  /** Un salon (`/api/rooms/{id}`). */
-  room: (roomId: string) => ['rooms', 'room', roomId] as const,
+export const roomQueries = {
+  mine: (http: HttpClient) =>
+    queryOptions({ queryKey: roomKeys.mine(), queryFn: ({ signal }) => getMyRooms(http, signal) }),
+  detail: (http: HttpClient, roomId: string | undefined) =>
+    queryOptions({
+      queryKey: roomKeys.detail(roomId),
+      queryFn: roomId ? ({ signal }) => getRoom(http, roomId, signal) : skipToken,
+    }),
 }
 
-/** Clés React Query de l'appariement. */
-export const matchmakingKeys = {
-  /** Ticket de recherche en cours du joueur. */
-  ticket: (ticketId: string) => ['matchmaking', 'ticket', ticketId] as const,
+/** Salles non terminales du joueur : défis reçus et envoyés, salons en attente, préparation en cours. */
+export function useMyRooms() {
+  const { http } = useJoutio()
+  return useQuery(roomQueries.mine(http))
 }
 
-/** Salles du joueur (Défis, pastille, reprise de partie). */
-export function useMyRooms(http: HttpClient) {
-  return useQuery({ queryKey: roomsKeys.myRooms(), queryFn: ({ signal }) => getMyRooms(http, signal) })
+/** Onglet Défis rangé en sections : reçus, envoyés, salles en attente. */
+export function useDefis() {
+  const { http } = useJoutio()
+  return useQuery({ ...roomQueries.mine(http), select: defisSections })
 }
 
-/** Un salon (vue REST). */
-export function useRoom(http: HttpClient, roomId: string | undefined) {
-  return useQuery({
-    queryKey: roomsKeys.room(roomId ?? ''),
-    queryFn: roomId ? ({ signal }) => getRoom(http, roomId, signal) : skipToken,
-  })
+const selectBadge = (rooms: Parameters<typeof pendingInvitations>[0]) =>
+  pendingInvitations(rooms) + roomsWaitingForViewer(rooms)
+
+/** Pastille de l'onglet Défis : défis reçus en attente et salles où l'adversaire attend le joueur. */
+export function useDefisBadge() {
+  const { http } = useJoutio()
+  return useQuery({ ...roomQueries.mine(http), select: selectBadge })
+}
+
+/** Revanche reçue en attente de réponse (overlay de l'écran de résultat), `undefined` sinon. */
+export function useIncomingRematch() {
+  const { http } = useJoutio()
+  return useQuery({ ...roomQueries.mine(http), select: incomingRematch })
+}
+
+/** Une salle (vue REST). */
+export function useRoom(roomId: string | undefined) {
+  const { http } = useJoutio()
+  return useQuery(roomQueries.detail(http, roomId))
 }

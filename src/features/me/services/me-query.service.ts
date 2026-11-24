@@ -16,6 +16,10 @@ export async function getBlockedPlayers(http: HttpClient, signal?: AbortSignalLi
   return http.get<UserRefView[]>('/api/me/blocked', { signal })
 }
 
-export async function checkPseudonymAvailability(http: HttpClient, value: string, signal?: AbortSignalLike): Promise<PseudonymAvailability> {
+export async function checkPseudonymAvailability(
+  http: HttpClient,
+  value: string,
+  signal?: AbortSignalLike,
+): Promise<PseudonymAvailability> {
   return http.get<PseudonymAvailability>('/api/profiles/pseudonym-availability', { query: { value }, signal })
 }

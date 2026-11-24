@@ -78,7 +78,11 @@ export const premiumReasonOf = (problem: QuotaProblem): PremiumReason =>
   problem === 'challenges' || problem === 'rooms' ? 'quota' : problem
 
 /** Accroche de la feuille Premium, chiffrée avec les limites du joueur (français ; le web passe par son i18n). */
-export const limitReason = (reason: PremiumReason, limits: PlanLimitsView, premium: PlanLimitsView = PREMIUM_LIMITS) => {
+export const limitReason = (
+  reason: PremiumReason,
+  limits: PlanLimitsView,
+  premium: PlanLimitsView = PREMIUM_LIMITS,
+) => {
   switch (reason) {
     case 'quota':
       return `Tu as atteint ${limits.pendingChallenges} défis ouverts. Premium monte la limite à ${premium.pendingChallenges}.`

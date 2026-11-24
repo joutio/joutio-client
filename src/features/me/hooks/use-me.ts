@@ -1,26 +1,12 @@
-import { queryOptions, skipToken, useQuery } from '@tanstack/react-query'
-import type { HttpClient } from '../../../core/http.js'
+import { useQuery } from '@tanstack/react-query'
+import { useJoutio } from '../../../core/runtime/context.js'
 import type { MeView } from '../types.js'
-import { checkPseudonymAvailability, getBlockedPlayers, getMe, getRewards } from '../services/me-query.service.js'
-
-/** Clés React Query du compte connecté, exportées pour les écritures transversales (`queryKeys`). */
-export const meKeys = {
-  /** `GET /api/me` — tout ce qui touche le compte, les compteurs et la progression. */
-  me: () => ['me'] as const,
-  /** Disponibilité d'un pseudonyme, par clé normalisée (`pseudonymKey`). */
-  pseudonymAvailability: (key: string) => ['me', 'pseudonym-availability', key] as const,
-  rewards: () => ['me', 'rewards'] as const,
-  /** Joueurs bloqués par le joueur courant (Réglages › Confidentialité). */
-  blockedPlayers: () => ['me', 'blocked'] as const,
-}
-
-function meOptions(http: HttpClient) {
-  return queryOptions({ queryKey: meKeys.me(), queryFn: ({ signal }) => getMe(http, signal) })
-}
+import { meQueries } from '../query/queries.js'
 
 /** Le compte connecté : identité, préférences, progression. */
-export function useMe(http: HttpClient) {
-  return useQuery(meOptions(http))
+export function useMe() {
+  const { http } = useJoutio()
+  return useQuery(meQueries.account(http))
 }
 
 const selectUserId = (me: MeView) => me.userId
@@ -28,40 +14,44 @@ const selectPremium = (me: MeView) => me.premium
 const selectAvatarOptions = (me: MeView) => me.avatarOptions
 const selectLanguage = (me: MeView) => me.language
 
-/** `userId` seul : un composant qui n'a besoin que de l'identité ne se rend pas quand le reste de `MeView` change. */
-export function useMyId(http: HttpClient) {
-  return useQuery({ ...meOptions(http), select: selectUserId })
+/** `userId` seul : le composant ne se rend pas quand le reste de `MeView` change. */
+export function useMyId() {
+  const { http } = useJoutio()
+  return useQuery({ ...meQueries.account(http), select: selectUserId })
 }
 
 /** Droit Premium effectif, seul. */
-export function useIsPremium(http: HttpClient) {
-  return useQuery({ ...meOptions(http), select: selectPremium })
+export function useIsPremium() {
+  const { http } = useJoutio()
+  return useQuery({ ...meQueries.account(http), select: selectPremium })
 }
 
 /** Options d'avatar, seules. */
-export function useMyAvatarOptions(http: HttpClient) {
-  return useQuery({ ...meOptions(http), select: selectAvatarOptions })
+export function useMyAvatarOptions() {
+  const { http } = useJoutio()
+  return useQuery({ ...meQueries.account(http), select: selectAvatarOptions })
 }
 
 /** Langue du compte, seule. */
-export function useMyLanguage(http: HttpClient) {
-  return useQuery({ ...meOptions(http), select: selectLanguage })
+export function useMyLanguage() {
+  const { http } = useJoutio()
+  return useQuery({ ...meQueries.account(http), select: selectLanguage })
 }
 
 /** Catalogue des récompenses (styles d'avatar). */
-export function useRewards(http: HttpClient) {
-  return useQuery({ queryKey: meKeys.rewards(), queryFn: ({ signal }) => getRewards(http, signal) })
+export function useRewards() {
+  const { http } = useJoutio()
+  return useQuery(meQueries.rewards(http))
 }
 
 /** Joueurs bloqués par le joueur courant. */
-export function useBlockedPlayers(http: HttpClient) {
-  return useQuery({ queryKey: meKeys.blockedPlayers(), queryFn: ({ signal }) => getBlockedPlayers(http, signal) })
+export function useBlockedPlayers() {
+  const { http } = useJoutio()
+  return useQuery(meQueries.blocked(http))
 }
 
-/** Disponibilité d'un pseudonyme ; la saisie vide ne déclenche rien (`skipToken`). */
-export function usePseudonymAvailability(http: HttpClient, value: string) {
-  return useQuery({
-    queryKey: meKeys.pseudonymAvailability(value),
-    queryFn: value ? ({ signal }) => checkPseudonymAvailability(http, value, signal) : skipToken,
-  })
+/** Disponibilité d'un pseudonyme ; la saisie vide ne déclenche rien. */
+export function usePseudonymAvailability(value: string) {
+  const { http } = useJoutio()
+  return useQuery(meQueries.pseudonymAvailability(http, value))
 }

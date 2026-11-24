@@ -6,6 +6,8 @@ import type {
   BadgeCollectionView,
   GameHistoryItemView,
   HeadToHeadView,
+  HistoryFilters,
+  HistoryFilterState,
   PlayerProfileView,
   TitlesView,
   TopicStatView,
@@ -13,7 +15,11 @@ import type {
 
 /** Endpoints des profils de joueurs. */
 
-export async function getProfile(http: HttpClient, userId: string, signal?: AbortSignalLike): Promise<PlayerProfileView> {
+export async function getProfile(
+  http: HttpClient,
+  userId: string,
+  signal?: AbortSignalLike,
+): Promise<PlayerProfileView> {
   return http.get<PlayerProfileView>(`/api/profiles/${segment(userId)}`, { signal })
 }
 
@@ -21,11 +27,19 @@ export async function getActivity(http: HttpClient, userId: string, signal?: Abo
   return http.get<ActivityView>(`/api/profiles/${segment(userId)}/activity`, { signal })
 }
 
-export async function getBadges(http: HttpClient, userId: string, signal?: AbortSignalLike): Promise<BadgeCollectionView> {
+export async function getBadges(
+  http: HttpClient,
+  userId: string,
+  signal?: AbortSignalLike,
+): Promise<BadgeCollectionView> {
   return http.get<BadgeCollectionView>(`/api/profiles/${segment(userId)}/badges`, { signal })
 }
 
-export async function getPlayedTopics(http: HttpClient, userId: string, signal?: AbortSignalLike): Promise<TopicStatView[]> {
+export async function getPlayedTopics(
+  http: HttpClient,
+  userId: string,
+  signal?: AbortSignalLike,
+): Promise<TopicStatView[]> {
   return http.get<TopicStatView[]>(`/api/profiles/${segment(userId)}/topics`, { signal })
 }
 
@@ -33,26 +47,17 @@ export async function getTitles(http: HttpClient, userId: string, signal?: Abort
   return http.get<TitlesView>(`/api/profiles/${segment(userId)}/titles`, { signal })
 }
 
-export async function getHeadToHead(http: HttpClient, userId: string, against: string, signal?: AbortSignalLike): Promise<HeadToHeadView> {
+export async function getHeadToHead(
+  http: HttpClient,
+  userId: string,
+  against: string,
+  signal?: AbortSignalLike,
+): Promise<HeadToHeadView> {
   return http.get<HeadToHeadView>(`/api/profiles/${segment(userId)}/head-to-head`, { query: { against }, signal })
 }
 
 /** 20 parties par page (`historique.md` § 5). */
 export const HISTORY_PAGE_SIZE = 20
-
-export type HistoryOpponentType = 'HUMAN' | 'BOT'
-export type HistoryOutcome = 'ALL' | 'WIN' | 'LOSS' | 'DRAW'
-export type HistorySort = 'RECENT' | 'OLDEST'
-
-export interface HistoryFilters {
-  topicId?: string
-  opponentId?: string
-  opponentType?: HistoryOpponentType
-  outcome: HistoryOutcome
-  sort: HistorySort
-}
-
-export type HistoryFilterState = Pick<HistoryFilters, 'opponentType' | 'outcome' | 'sort'>
 
 export const DEFAULT_HISTORY_FILTERS: HistoryFilterState = {
   outcome: 'ALL',

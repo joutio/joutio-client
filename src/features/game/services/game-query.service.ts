@@ -13,10 +13,18 @@ export async function getActiveGames(http: HttpClient, signal?: AbortSignalLike)
   return http.get<ActiveGameView[]>('/api/games', { query: { active: true }, signal })
 }
 
-export async function getGameResult(http: HttpClient, gameId: string, signal?: AbortSignalLike): Promise<GameResultView> {
+export async function getGameResult(
+  http: HttpClient,
+  gameId: string,
+  signal?: AbortSignalLike,
+): Promise<GameResultView> {
   return http.get<GameResultView>(`/api/games/${segment(gameId)}/result`, { signal })
 }
 
-export async function getGameEvents(http: HttpClient, gameId: string, signal?: AbortSignalLike): Promise<EventEnvelope<GameEvent>[]> {
+export async function getGameEvents(
+  http: HttpClient,
+  gameId: string,
+  signal?: AbortSignalLike,
+): Promise<EventEnvelope<GameEvent>[]> {
   return http.get<EventEnvelope<GameEvent>[]>(`/api/games/${segment(gameId)}/events`, { signal })
 }

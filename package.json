@@ -33,11 +33,6 @@
       "import": "./dist/features/rooms/index.js",
       "default": "./dist/features/rooms/index.js"
     },
-    "./challenges": {
-      "types": "./dist/features/challenges/index.d.ts",
-      "import": "./dist/features/challenges/index.js",
-      "default": "./dist/features/challenges/index.js"
-    },
     "./authoring": {
       "types": "./dist/features/authoring/index.d.ts",
       "import": "./dist/features/authoring/index.js",
@@ -88,6 +83,11 @@
       "import": "./dist/features/onboarding/index.js",
       "default": "./dist/features/onboarding/index.js"
     },
+    "./sync": {
+      "types": "./dist/sync/index.d.ts",
+      "import": "./dist/sync/index.js",
+      "default": "./dist/sync/index.js"
+    },
     "./core": {
       "types": "./dist/core/index.d.ts",
       "import": "./dist/core/index.js",
@@ -129,7 +129,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@eslint/js": "^10",
@@ -140,6 +142,7 @@
     "@types/react": "^19.0.0",
     "eslint": "^10",
     "jsdom": "^26.0.0",
+    "prettier": "^3.10.1",
     "react": "^19.0.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8",

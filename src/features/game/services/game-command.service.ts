@@ -3,7 +3,12 @@ import { segment } from '../../../core/http.js'
 import type { AnswerQuestionCommand } from '../types.js'
 
 /** Réponse à la manche `round` (1 à 7) ; la manche rend le renvoi sûr, `clientElapsedMs` est borné par le serveur. */
-export async function answerQuestion(http: HttpClient, gameId: string, command: AnswerQuestionCommand, signal?: AbortSignalLike): Promise<void> {
+export async function answerQuestion(
+  http: HttpClient,
+  gameId: string,
+  command: AnswerQuestionCommand,
+  signal?: AbortSignalLike,
+): Promise<void> {
   return http.post<void>(`/api/games/${segment(gameId)}/answer`, { body: command, signal })
 }
 

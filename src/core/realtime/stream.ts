@@ -97,7 +97,10 @@ export class EventStream<T, S> {
     this.started = true
     // Abonnement AVANT le fetch : les trames reçues pendant le chargement de l'historique sont
     // tamponnées puis fusionnées (dédup par séquence).
-    this.unsubscribeLive = this.options.source.subscribe((body) => this.onFrame(body), () => this.requestReload())
+    this.unsubscribeLive = this.options.source.subscribe(
+      (body) => this.onFrame(body),
+      () => this.requestReload(),
+    )
     if (!this.loading) {
       this.requestReload()
     }

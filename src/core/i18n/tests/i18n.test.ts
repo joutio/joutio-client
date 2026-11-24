@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { en, fr, languageOf, pluralOf, translate } from '../index.js'
 
-const placeholders = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(',')
+const placeholders = (text: string) =>
+  [...text.matchAll(/\{(\w+)\}/g)]
+    .map((m) => m[1])
+    .sort()
+    .join(',')
 
 describe('i18n', () => {
   it('a les mêmes clés en français et en anglais', () => {
@@ -9,12 +13,18 @@ describe('i18n', () => {
   })
 
   it('garde les mêmes {valeurs} dans les deux langues', () => {
-    const differ = (Object.keys(fr) as (keyof typeof fr)[]).filter((key) => placeholders(fr[key]) !== placeholders(en[key]))
+    const differ = (Object.keys(fr) as (keyof typeof fr)[]).filter(
+      (key) => placeholders(fr[key]) !== placeholders(en[key]),
+    )
     expect(differ).toEqual([])
   })
 
   it("n'a aucun texte anglais vide", () => {
-    expect(Object.entries(en).filter(([, text]) => text.trim() === '').map(([key]) => key)).toEqual([])
+    expect(
+      Object.entries(en)
+        .filter(([, text]) => text.trim() === '')
+        .map(([key]) => key),
+    ).toEqual([])
   })
 
   it('interpole et retombe sur le français', () => {

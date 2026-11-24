@@ -1,1 +1,5 @@
+export * from './client.js'
 export * from './keys.js'
+export * from './optimistic.js'
+export * from './pages.js'
+export * from './use-optimistic-mutation.js'

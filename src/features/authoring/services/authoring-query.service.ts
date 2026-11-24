@@ -2,7 +2,15 @@ import type { AbortSignalLike, HttpClient } from '../../../core/http.js'
 import { segment } from '../../../core/http.js'
 import type { PageResponse } from '../../../core/types/common.js'
 import type { TopicCardView } from '../../topics/types.js'
-import type { OwnerQuestionReport, QuestionEditorView, ReportedQuestion, ReportDetail, TeamMember, TopicTodo, TopicWorkshop } from '../types.js'
+import type {
+  OwnerQuestionReport,
+  QuestionEditorView,
+  ReportedQuestion,
+  ReportDetail,
+  TeamMember,
+  TopicTodo,
+  TopicWorkshop,
+} from '../types.js'
 
 /** Taille de page de `GET /api/topics/{id}/questions` (plafond BFF : 100). */
 export const QUESTIONS_PAGE = 100
@@ -25,7 +33,11 @@ export async function getTeam(http: HttpClient, topicId: string, signal?: AbortS
 }
 
 /** File des questions signalées d'un sujet (Modération › Signalements). */
-export async function getReportQueue(http: HttpClient, topicId: string, signal?: AbortSignalLike): Promise<ReportedQuestion[]> {
+export async function getReportQueue(
+  http: HttpClient,
+  topicId: string,
+  signal?: AbortSignalLike,
+): Promise<ReportedQuestion[]> {
   return http.get<ReportedQuestion[]>(`/api/question-reports/topics/${segment(topicId)}`, { signal })
 }
 
@@ -35,12 +47,19 @@ export async function getMyTopics(http: HttpClient, signal?: AbortSignalLike): P
 }
 
 /** Mes sujets créés. */
-export async function getCreatedTopics(http: HttpClient, signal?: AbortSignalLike): Promise<PageResponse<TopicCardView>> {
+export async function getCreatedTopics(
+  http: HttpClient,
+  signal?: AbortSignalLike,
+): Promise<PageResponse<TopicCardView>> {
   return http.get<PageResponse<TopicCardView>>('/api/topics', { query: { mine: true, page: 0, size: 100 }, signal })
 }
 
 /** Sujets publiés au nom proche (avertissement de doublon de « Nouveau sujet »). */
-export async function getTopicsNamed(http: HttpClient, query: string, signal?: AbortSignalLike): Promise<PageResponse<TopicCardView>> {
+export async function getTopicsNamed(
+  http: HttpClient,
+  query: string,
+  signal?: AbortSignalLike,
+): Promise<PageResponse<TopicCardView>> {
   return http.get<PageResponse<TopicCardView>>('/api/topics', { query: { q: query, page: 0, size: 20 }, signal })
 }
 
@@ -57,11 +76,19 @@ export async function getAllQuestions(http: HttpClient, topicId: string): Promis
 }
 
 /** Détail d'un signalement. */
-export async function getReportDetail(http: HttpClient, reportId: string, signal?: AbortSignalLike): Promise<ReportDetail> {
+export async function getReportDetail(
+  http: HttpClient,
+  reportId: string,
+  signal?: AbortSignalLike,
+): Promise<ReportDetail> {
   return http.get<ReportDetail>(`/api/question-reports/${segment(reportId)}`, { signal })
 }
 
 /** Signalements ouverts d'une question. */
-export async function getQuestionReports(http: HttpClient, questionId: string, signal?: AbortSignalLike): Promise<OwnerQuestionReport[]> {
+export async function getQuestionReports(
+  http: HttpClient,
+  questionId: string,
+  signal?: AbortSignalLike,
+): Promise<OwnerQuestionReport[]> {
   return http.get<OwnerQuestionReport[]>(`/api/questions/${segment(questionId)}/reports`, { signal })
 }

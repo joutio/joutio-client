@@ -135,6 +135,7 @@ export const avatarEn: AvatarLabels = {
     cancel: 'Cancel',
     save: 'Save',
     saving: 'Saving…',
-    credits: 'Avatars made with DiceBear. Micah style © Micah Lanier (CC BY 4.0); Lorelei and Notionists styles under CC0.',
+    credits:
+      'Avatars made with DiceBear. Micah style © Micah Lanier (CC BY 4.0); Lorelei and Notionists styles under CC0.',
   },
 }

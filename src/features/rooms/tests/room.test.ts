@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { Room } from '../domain/room.js'
-import { applyRoomPresence, isWaitingForViewer, roomsWaitingForViewer, splitRoomsByOrigin } from '../domain/room-view.js'
+import {
+  applyRoomPresence,
+  applyRoomStatus,
+  defisSections,
+  incomingRematch,
+  isWaitingForViewer,
+  pendingInvitations,
+  roomsWaitingForViewer,
+} from '../domain/room-view.js'
+import { afterInvitationReminder, invitationReminderDelay } from '../domain/reminder.js'
+import { joinRefusalOf } from '../hooks/use-room-stream.js'
 import { preparationComplete, preparationStep, waitingStatusLabel } from '../domain/preparation.js'
 import type { RoomView } from '../types.js'
 import { Matchmaking } from '../domain/matchmaking.js'
@@ -8,7 +18,26 @@ import type { RoomEvent } from '../domain/room-event.js'
 
 const fold = (events: RoomEvent[]) => events.reduce((room, event) => room.onRoomEvent(event), Room.empty('r1'))
 
-const created: RoomEvent = { type: 'ROOM_CREATED', roomId: 'r1', topicId: 't1', initiatorId: 'p1', opponentId: null, vsBot: false, expiresAt: '2026-11-11T10:02:00Z' }
+const created: RoomEvent = {
+  type: 'ROOM_CREATED',
+  roomId: 'r1',
+  topicId: 't1',
+  initiatorId: 'p1',
+  opponentId: null,
+  vsBot: false,
+  origin: 'SHARED',
+  status: 'WAITING_PLAYERS',
+  sourceGameId: null,
+  expiresAt: '2026-11-11T10:02:00Z',
+}
+const invited: RoomEvent = {
+  ...created,
+  opponentId: 'p2',
+  origin: 'REMATCH',
+  status: 'INVITED',
+  sourceGameId: 'g0',
+  expiresAt: '2026-11-11T10:00:10Z',
+}
 
 describe('Room.onRoomEvent', () => {
   it('tracks presence, then each preparation step up to the game', () => {
@@ -30,9 +59,54 @@ describe('Room.onRoomEvent', () => {
   })
 
   it('keeps the room open when a player leaves', () => {
-    const room = fold([created, { type: 'ROOM_ENTERED', roomId: 'r1', playerId: 'p1' }, { type: 'ROOM_LEFT', roomId: 'r1', playerId: 'p1' }])
+    const room = fold([
+      created,
+      { type: 'ROOM_ENTERED', roomId: 'r1', playerId: 'p1' },
+      { type: 'ROOM_LEFT', roomId: 'r1', playerId: 'p1' },
+    ])
     expect(room.status).toBe('WAITING_PLAYERS')
     expect(room.initiatorPresent).toBe(false)
+  })
+})
+
+describe('invitation', () => {
+  it('starts invited, then waits for the players once accepted', () => {
+    expect(fold([invited]).status).toBe('INVITED')
+    expect(fold([invited]).sourceGameId).toBe('g0')
+    const accepted = fold([invited, { type: 'ROOM_ACCEPTED', roomId: 'r1', expiresAt: '2026-11-12T10:00:00Z' }])
+    expect(accepted.status).toBe('WAITING_PLAYERS')
+    expect(accepted.expiresAt).toBe('2026-11-12T10:00:00Z')
+  })
+
+  it('ends on a refusal', () => {
+    expect(fold([invited, { type: 'ROOM_DECLINED', roomId: 'r1' }]).status).toBe('DECLINED')
+  })
+})
+
+describe('reminderState', () => {
+  const waiting = fold([
+    { ...invited, origin: 'CHALLENGE', status: 'WAITING_PLAYERS' },
+    { type: 'ROOM_ENTERED', roomId: 'r1', playerId: 'p1' },
+  ])
+
+  it('lets a present player call the absent opponent, then waits for the cadence', () => {
+    expect(waiting.reminderState('p1', 0)).toEqual({ available: true, cooldownEndsAt: null })
+    const reminded = waiting.onRoomEvent({
+      type: 'ROOM_REMINDED',
+      roomId: 'r1',
+      playerId: 'p1',
+      targetId: 'p2',
+      stage: 'PRESENCE',
+      remindedAt: '2026-11-11T10:00:00Z',
+      remindableAt: '2026-11-11T10:00:10Z',
+    })
+    const cooldownEndsAt = Date.parse('2026-11-11T10:00:10Z')
+    expect(reminded.reminderState('p1', cooldownEndsAt - 1)).toEqual({ available: false, cooldownEndsAt })
+    expect(reminded.reminderState('p1', cooldownEndsAt).available).toBe(true)
+  })
+
+  it('is unavailable while the room is still an invitation', () => {
+    expect(fold([invited]).reminderState('p1', 0).available).toBe(false)
   })
 })
 
@@ -62,17 +136,35 @@ describe('preparation', () => {
   })
 
   it('names who the room waits for', () => {
-    expect(waitingStatusLabel({ playerPresent: true, opponentPresent: true, opponentLabel: 'Sofia R.' })).toBe('Les deux joueurs sont là')
-    expect(waitingStatusLabel({ playerPresent: true, opponentPresent: false, opponentLabel: 'Sofia R.' })).toBe('En attente de Sofia R.')
-    expect(waitingStatusLabel({ playerPresent: true, opponentPresent: false, opponentLabel: null })).toBe("En attente d'un adversaire")
+    expect(waitingStatusLabel({ playerPresent: true, opponentPresent: true, opponentLabel: 'Sofia R.' })).toBe(
+      'Les deux joueurs sont là',
+    )
+    expect(waitingStatusLabel({ playerPresent: true, opponentPresent: false, opponentLabel: 'Sofia R.' })).toBe(
+      'En attente de Sofia R.',
+    )
+    expect(waitingStatusLabel({ playerPresent: true, opponentPresent: false, opponentLabel: null })).toBe(
+      "En attente d'un adversaire",
+    )
   })
 })
 
 describe('Matchmaking.onMatchmakingEvent', () => {
   it('goes from searching to matched', () => {
-    const searching = Matchmaking.empty('m1').onMatchmakingEvent( { type: 'SEARCHING', ticketId: 'm1', topicId: 't1', deadlineAt: '2026-11-11T10:00:10Z' })
+    const searching = Matchmaking.empty('m1').onMatchmakingEvent({
+      type: 'SEARCHING',
+      ticketId: 'm1',
+      topicId: 't1',
+      deadlineAt: '2026-11-11T10:00:10Z',
+    })
     expect(searching.deadlineAt).toBe('2026-11-11T10:00:10Z')
-    const matched = searching.onMatchmakingEvent( { type: 'MATCHED', ticketId: 'm1', roomId: 'r1', opponentId: 'p2', vsBot: false, opponent: null })
+    const matched = searching.onMatchmakingEvent({
+      type: 'MATCHED',
+      ticketId: 'm1',
+      roomId: 'r1',
+      opponentId: 'p2',
+      vsBot: false,
+      opponent: null,
+    })
     expect(matched.status).toBe('MATCHED')
     expect(matched.roomId).toBe('r1')
   })
@@ -81,17 +173,26 @@ describe('Matchmaking.onMatchmakingEvent', () => {
 describe('roomsWaitingForViewer', () => {
   const view = (overrides: Partial<RoomView>): RoomView => ({
     roomId: 'r1',
-    topic: { topicId: 't1', names: { fr: 'Sujet' }, category: 'GENERAL', imageUrl: null, pictogramUrl: null } as unknown as RoomView['topic'],
+    topic: {
+      topicId: 't1',
+      names: { fr: 'Sujet' },
+      category: 'GENERAL',
+      imageUrl: null,
+      pictogramUrl: null,
+    } as unknown as RoomView['topic'],
     status: 'WAITING_PLAYERS',
     origin: 'SHARED',
+    access: 'OPEN_LINK',
     vsBot: false,
     canCancel: true,
     opponent: null,
     initiatorPresent: false,
     participantPresent: true,
     gameId: null,
+    sourceGameId: null,
     createdAt: '2026-11-16T10:00:00Z',
     expiresAt: '2026-11-16T11:00:00Z',
+    remindableAt: null,
     updatedAt: '2026-11-16T10:00:00Z',
     ...overrides,
   })
@@ -99,7 +200,12 @@ describe('roomsWaitingForViewer', () => {
   it('counts rooms where the opponent waits for the viewer, initiator or guest', () => {
     expect(isWaitingForViewer(view({}))).toBe(true)
     expect(isWaitingForViewer(view({ canCancel: false, initiatorPresent: true, participantPresent: false }))).toBe(true)
-    expect(roomsWaitingForViewer([view({}), view({ roomId: 'r2', canCancel: false, initiatorPresent: true, participantPresent: false })])).toBe(2)
+    expect(
+      roomsWaitingForViewer([
+        view({}),
+        view({ roomId: 'r2', canCancel: false, initiatorPresent: true, participantPresent: false }),
+      ]),
+    ).toBe(2)
   })
 
   it('ignores rooms where the viewer is there, nobody waits, a bot plays or preparation started', () => {
@@ -113,16 +219,32 @@ describe('roomsWaitingForViewer', () => {
 
 describe('applyRoomPresence', () => {
   const room = (overrides: Partial<RoomView>): RoomView =>
-    ({ roomId: 'r1', status: 'WAITING_PLAYERS', vsBot: false, canCancel: true, initiatorPresent: false, participantPresent: false, ...overrides }) as RoomView
+    ({
+      roomId: 'r1',
+      status: 'WAITING_PLAYERS',
+      vsBot: false,
+      canCancel: true,
+      initiatorPresent: false,
+      participantPresent: false,
+      ...overrides,
+    }) as RoomView
   const at = '2026-11-16T10:00:00Z'
 
   it('sets the opponent presence for an initiator and my own presence', () => {
-    expect(applyRoomPresence([room({})], { roomId: 'r1', playerId: 'p2', present: true, at }, 'p1')?.[0]?.participantPresent).toBe(true)
-    expect(applyRoomPresence([room({})], { roomId: 'r1', playerId: 'p1', present: true, at }, 'p1')?.[0]?.initiatorPresent).toBe(true)
+    expect(
+      applyRoomPresence([room({})], { roomId: 'r1', playerId: 'p2', present: true, at }, 'p1')?.[0]?.participantPresent,
+    ).toBe(true)
+    expect(
+      applyRoomPresence([room({})], { roomId: 'r1', playerId: 'p1', present: true, at }, 'p1')?.[0]?.initiatorPresent,
+    ).toBe(true)
   })
 
   it('sets the initiator presence for a guest viewer', () => {
-    const next = applyRoomPresence([room({ canCancel: false, initiatorPresent: true })], { roomId: 'r1', playerId: 'p1', present: false, at }, 'p2')
+    const next = applyRoomPresence(
+      [room({ canCancel: false, initiatorPresent: true })],
+      { roomId: 'r1', playerId: 'p1', present: false, at },
+      'p2',
+    )
     expect(next?.[0]?.initiatorPresent).toBe(false)
   })
 
@@ -131,11 +253,69 @@ describe('applyRoomPresence', () => {
   })
 })
 
-describe('splitRoomsByOrigin', () => {
-  it('separates shared rooms from challenge rooms and leaves bot rooms out', () => {
-    const rooms = [{ origin: 'SHARED' as const }, { origin: 'CHALLENGE' as const }, { origin: 'REMATCH' as const }, { origin: 'BOT' as const }]
-    const { shared, challenges } = splitRoomsByOrigin(rooms)
-    expect(shared).toHaveLength(1)
-    expect(challenges.map((room) => room.origin)).toEqual(['CHALLENGE', 'REMATCH'])
+describe('Défis', () => {
+  const view = (overrides: Partial<RoomView>) =>
+    ({
+      roomId: 'r1',
+      status: 'INVITED',
+      origin: 'CHALLENGE',
+      vsBot: false,
+      canCancel: false,
+      expiresAt: '2026-11-16T11:00:00Z',
+      ...overrides,
+    }) as RoomView
+
+  it('splits received and sent invitations from rooms waiting for the players', () => {
+    const rooms = [
+      view({ roomId: 'late', expiresAt: '2026-11-16T12:00:00Z' }),
+      view({ roomId: 'soon', expiresAt: '2026-11-16T10:30:00Z' }),
+      view({ roomId: 'sent', canCancel: true }),
+      view({ roomId: 'accepted', status: 'WAITING_PLAYERS' }),
+      view({ roomId: 'link', status: 'WAITING_PLAYERS', origin: 'SHARED', canCancel: true }),
+      view({ roomId: 'bot', status: 'WAITING_PLAYERS', origin: 'BOT', vsBot: true }),
+      view({ roomId: 'preparing', status: 'FETCHING_PLAYERS' }),
+    ]
+    const sections = defisSections(rooms)
+    expect(sections.received.map((room) => room.roomId)).toEqual(['soon', 'late'])
+    expect(sections.sent.map((room) => room.roomId)).toEqual(['sent'])
+    expect(sections.waiting.map((room) => room.roomId)).toEqual(['accepted', 'link'])
+    expect(pendingInvitations(rooms)).toBe(2)
+  })
+
+  it('finds the rematch waiting for an answer', () => {
+    expect(incomingRematch([view({}), view({ roomId: 'rematch', origin: 'REMATCH' })])?.roomId).toBe('rematch')
+    expect(incomingRematch([view({ origin: 'REMATCH', canCancel: true })])).toBeUndefined()
+  })
+
+  it('applies a pushed status: accepted stays, ended or launched leaves, unknown asks for a reload', () => {
+    const at = '2026-11-16T10:00:00Z'
+    expect(
+      applyRoomStatus([view({})], {
+        roomId: 'r1',
+        status: 'WAITING_PLAYERS',
+        expiresAt: '2026-11-17T10:00:00Z',
+        at,
+      })?.[0],
+    ).toMatchObject({
+      status: 'WAITING_PLAYERS',
+      expiresAt: '2026-11-17T10:00:00Z',
+    })
+    expect(applyRoomStatus([view({})], { roomId: 'r1', status: 'DECLINED', expiresAt: null, at })).toEqual([])
+    expect(applyRoomStatus([view({})], { roomId: 'r9', status: 'INVITED', expiresAt: null, at })).toBeUndefined()
+  })
+
+  it('pushes the invitation reminder 10 minutes away', () => {
+    const now = Date.parse('2026-11-16T10:00:00Z')
+    expect(invitationReminderDelay({ remindableAt: '2026-11-16T10:05:00Z' }, now)).toBe(5 * 60 * 1000)
+    expect(invitationReminderDelay(afterInvitationReminder({ remindableAt: null }, now), now)).toBe(10 * 60 * 1000)
+  })
+})
+
+describe('joinRefusalOf', () => {
+  it('maps the server problems to the refusal shown', () => {
+    expect(joinRefusalOf('urn:joutio:room:alreadyFull')).toBe('FULL')
+    expect(joinRefusalOf('urn:joutio:room:invitationPending')).toBe('NOT_INVITED')
+    expect(joinRefusalOf('urn:joutio:room:notFound')).toBe('GONE')
+    expect(joinRefusalOf('urn:joutio:bff:player:unavailable')).toBe('UNAVAILABLE')
   })
 })

@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { COUNTRY_CODES, countryFlag, countryName, isCountryCode, regionOfLocale, searchCountries, sortedCountries, suggestedCountries } from '../index.js'
+import {
+  COUNTRY_CODES,
+  countryFlag,
+  countryName,
+  isCountryCode,
+  regionOfLocale,
+  searchCountries,
+  sortedCountries,
+  suggestedCountries,
+} from '../index.js'
 
 describe('country', () => {
   it('covers the 249 assigned ISO codes', () => {
@@ -31,7 +40,7 @@ describe('country', () => {
     expect(searchCountries('algerie')[0]?.code).toBe('DZ')
     expect(searchCountries('BE')[0]?.code).toBe('BE')
     expect(searchCountries('germany').map(({ code }) => code)).toContain('DE')
-    expect(searchCountries('cote d\'iv')[0]?.code).toBe('CI')
+    expect(searchCountries("cote d'iv")[0]?.code).toBe('CI')
     expect(searchCountries('atlantide')).toEqual([])
     expect(searchCountries('')).toHaveLength(249)
   })

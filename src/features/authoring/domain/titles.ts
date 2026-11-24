@@ -42,17 +42,26 @@ export function customTitle(titles: TopicTitles | null | undefined, tier: Master
 }
 
 /** Libellé affiché d'un titre : titre saisi, sinon « Or · Sujet ». */
-export function titleLabel(titles: TopicTitles | null | undefined, tier: MasteryTier, topicName: string, language = 'fr'): string {
+export function titleLabel(
+  titles: TopicTitles | null | undefined,
+  tier: MasteryTier,
+  topicName: string,
+  language = 'fr',
+): string {
   return customTitle(titles, tier, language) ?? `${MASTERY_TIER_LABELS[tier]} · ${topicName}`
 }
 
 /** Nombre de paliers qui ont au moins un titre saisi (« 3/7 personnalisés »). */
 export function customizedTierCount(titles: TopicTitles | null | undefined): number {
-  return MASTERY_TIERS.filter((tier) => TITLE_LANGUAGES.some((language) => (titles?.[language]?.[tier] ?? '').trim() !== '')).length
+  return MASTERY_TIERS.filter((tier) =>
+    TITLE_LANGUAGES.some((language) => (titles?.[language]?.[tier] ?? '').trim() !== ''),
+  ).length
 }
 
 /** Brouillon de la feuille Titres : toutes les langues et tous les paliers, vides par défaut. */
-export function titlesDraft(titles: TopicTitles | null | undefined): Record<TitleLanguage, Record<MasteryTier, string>> {
+export function titlesDraft(
+  titles: TopicTitles | null | undefined,
+): Record<TitleLanguage, Record<MasteryTier, string>> {
   const draft = {} as Record<TitleLanguage, Record<MasteryTier, string>>
   for (const language of TITLE_LANGUAGES) {
     draft[language] = {} as Record<MasteryTier, string>
@@ -62,7 +71,9 @@ export function titlesDraft(titles: TopicTitles | null | undefined): Record<Titl
 }
 
 /** Premier titre trop long du brouillon, ou `null`. */
-export function tooLongTitle(draft: Record<string, Record<string, string>>): { language: string; tier: MasteryTier } | null {
+export function tooLongTitle(
+  draft: Record<string, Record<string, string>>,
+): { language: string; tier: MasteryTier } | null {
   for (const language of Object.keys(draft)) {
     for (const tier of MASTERY_TIERS) {
       if ((draft[language]?.[tier] ?? '').trim().length > TITLE_MAX_LENGTH) return { language, tier }
@@ -89,6 +100,9 @@ export function normalizeTitles(draft: Record<string, Record<string, string>>): 
 }
 
 /** Vrai quand le brouillon diffère des titres enregistrés (bouton Enregistrer). */
-export function titlesChanged(saved: TopicTitles | null | undefined, draft: Record<string, Record<string, string>>): boolean {
+export function titlesChanged(
+  saved: TopicTitles | null | undefined,
+  draft: Record<string, Record<string, string>>,
+): boolean {
   return JSON.stringify(normalizeTitles(titlesDraft(saved))) !== JSON.stringify(normalizeTitles(draft))
 }

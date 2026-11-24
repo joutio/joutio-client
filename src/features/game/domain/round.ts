@@ -19,7 +19,10 @@ export interface LocalizedQuestionSource {
  * Résout le texte, les réponses et la description de l'image dans la langue du joueur, avec repli sur la langue
  * source (langue absente du snapshot ou ancienne partie sans traductions). `imageAlt` vide : image décorative.
  */
-export function localizedQuestion(round: LocalizedQuestionSource | null | undefined, language: string): { questionText: string; answers: Record<string, string>; imageAlt: string } {
+export function localizedQuestion(
+  round: LocalizedQuestionSource | null | undefined,
+  language: string,
+): { questionText: string; answers: Record<string, string>; imageAlt: string } {
   if (!round) {
     return { questionText: '', answers: {}, imageAlt: '' }
   }

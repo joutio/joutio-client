@@ -13,11 +13,16 @@ const DICTIONARIES: Record<string, AvatarLabels> = { fr: avatarFr, en: avatarEn 
  * Libellé d'une clé `avatar.…` de l'éditeur d'avatar (`{{number}}` interpolé), dans la langue demandée avec repli sur
  * le français ; la clé brute à défaut.
  */
-export function avatarLabel(language: Language | string, key: string, vars: Record<string, string | number> = {}): string {
+export function avatarLabel(
+  language: Language | string,
+  key: string,
+  vars: Record<string, string | number> = {},
+): string {
   const path = key.replace(/^avatar\./, '').split('.')
   const find = (dictionary: AvatarLabels | undefined) => {
     let node: unknown = dictionary
-    for (const part of path) node = node && typeof node === 'object' ? (node as Record<string, unknown>)[part] : undefined
+    for (const part of path)
+      node = node && typeof node === 'object' ? (node as Record<string, unknown>)[part] : undefined
     return typeof node === 'string' ? node : undefined
   }
   const label = find(DICTIONARIES[language]) ?? find(avatarFr)

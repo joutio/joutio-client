@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { customizedTierCount, customTitle, normalizeTitles, titleLabel, titlesChanged, titlesDraft, tooLongTitle, TITLE_MAX_LENGTH } from '../domain/titles.js'
+import {
+  customizedTierCount,
+  customTitle,
+  normalizeTitles,
+  titleLabel,
+  titlesChanged,
+  titlesDraft,
+  tooLongTitle,
+  TITLE_MAX_LENGTH,
+} from '../domain/titles.js'
 
 describe('titles', () => {
   const saved = { fr: { OR: 'Connétable', FER: 'Écuyer' }, en: { OR: 'Constable' } }
