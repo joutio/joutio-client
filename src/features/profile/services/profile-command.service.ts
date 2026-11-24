@@ -33,3 +33,8 @@ export async function updateProfileLanguage(http: HttpClient, userId: string, la
 export async function updateAvatarOptions(http: HttpClient, userId: string, avatarOptions: string | null, signal?: AbortSignalLike): Promise<void> {
   return http.put<void>(`/api/profiles/${segment(userId)}/avatar-options`, { body: { avatarOptions }, signal })
 }
+
+/** `PUT /api/profiles/{id}/title` : porte un titre (`topicId:TIER`) ou le retire (`null`). */
+export async function updateProfileTitle(http: HttpClient, userId: string, titleKey: string | null, signal?: AbortSignalLike): Promise<void> {
+  return http.put<void>(`/api/profiles/${segment(userId)}/title`, { body: { titleKey }, signal })
+}
