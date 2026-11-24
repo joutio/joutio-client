@@ -1,3 +1,16 @@
+## [11.0.0](https://github.com/joutio/joutio-client/compare/v10.0.0...v11.0.0) (2026-11-24)
+
+### ⚠ BREAKING CHANGES
+
+* hooks read http and realtime from JoutioClientProvider, queryKeys,
+the challenges feature, usePersonalInvalidation, usePersonalNotifications,
+useRoomPresenceEvents and service exports are removed; mutation hooks no longer
+accept callbacks.
+
+### Features
+
+* own the cache behind a provider, with targeted optimistic rollback ([f3fb22e](https://github.com/joutio/joutio-client/commit/f3fb22e86d926e879a3141566096e784b6944f17))
+
 ## [10.0.0](https://github.com/joutio/joutio-client/compare/v9.0.0...v10.0.0) (2026-11-23)
 
 ### ⚠ BREAKING CHANGES

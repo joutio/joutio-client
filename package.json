@@ -1,6 +1,6 @@
 {
   "name": "@joutio/client",
-  "version": "10.0.0",
+  "version": "11.0.0",
   "description": "Domaine client partagé de Joutio (web, mobile) : logique métier, lectures et hooks TanStack Query, sans DOM ni plateforme.",
   "license": "UNLICENSED",
   "type": "module",
