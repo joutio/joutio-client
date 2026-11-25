@@ -124,7 +124,7 @@ export interface GameResultRoundView {
 /**
  * Vue de résultat d'un duel (`GET /api/games/{gameId}/result`) : bilan autoritaire de la partie,
  * progression du joueur après récompense et enrichissements (sujet + adversaire) pour la page
- * résultat. `reward` arrive après la projection (poll court).
+ * résultat. `reward` arrive après la projection : `useGameResult` y superpose la vue vivante `GameRewardView`.
  */
 export interface GameResultView {
   myScore: number
@@ -167,9 +167,28 @@ export interface GameResultView {
   opponentDeleted: boolean
   /**
    * Badges débloqués par la partie, dans l'ordre d'obtention (séquence du résultat, après les titres). Vide tant que
-   * la projection ne les a pas écrits : l'achievement STOMP portant ce `gameId` fait relire le résultat.
+   * la projection ne les a pas écrits : la vue vivante `GameRewardView` les apporte.
    */
   badges: BadgeView[]
   /** Manches closes dans l'ordre, avec le snapshot de question (revue des manches). */
   rounds: GameResultRoundView[]
+}
+
+/**
+ * Récompense d'un duel vue par un joueur : vue vivante `game-reward` (clé `{gameId}:{userId}`), poussée à chaque
+ * écriture de profile qui la change, sous les noms de `GameResultView`. Un Elo `null` (partie ancienne, adversaire
+ * pas encore récompensé, entraînement) garde celui du résultat.
+ */
+export interface GameRewardView {
+  reward: GameResultReward
+  rating: number | null
+  peakRating: number
+  ratedGames: number
+  topicMastery: GameResultView['topicMastery']
+  eloDelta: number
+  rated: boolean
+  opponentRating: number | null
+  opponentEloDelta: number
+  opponentRated: boolean
+  badges: BadgeView[]
 }

@@ -73,13 +73,13 @@ describe('useJoutioSync', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: roomKeys.mine() })
   })
 
-  it('marks server-computed views stale on an achievement, but reloads the game result at once', () => {
+  it('marks server-computed views stale on an achievement, without reading the game result', () => {
     const realtime = fakeRealtime()
     const { client } = renderWithJoutio(() => useJoutioSync('u1'), { realtime: realtime.transport })
     const invalidate = vi.spyOn(client, 'invalidateQueries')
 
     act(() => realtime.push('/topic/achievements/u1', { kind: 'BADGE', gameId: 'g1' }))
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: gameKeys.result('g1') })
+    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: gameKeys.result('g1') })
     expect(invalidate).toHaveBeenCalledWith({ queryKey: meKeys.account(), refetchType: 'none' })
   })
 })

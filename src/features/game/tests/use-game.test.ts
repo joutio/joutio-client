@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, waitFor } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { fakeHttp, fakeRealtime, renderWithJoutio } from '../../../testing/joutio.js'
 import { homeKeys } from '../../home/query/keys.js'
 import type { HomeView } from '../../home/types.js'
@@ -11,10 +11,11 @@ import type { PlayerProfileView } from '../../profile/types.js'
 import { topicKeys } from '../../topics/query/keys.js'
 import type { TopicOverviewView } from '../../topics/types.js'
 import type { GameEvent } from '../domain/game-event.js'
-import { REWARD_POLL, useGameResult } from '../hooks/use-game.js'
+import { LIVE_NOT_FOUND, type LiveUpdate } from '../../../core/realtime/use-live-query.js'
+import { useGameResult } from '../hooks/use-game.js'
 import { useGameStream } from '../hooks/use-game-stream.js'
 import { gameKeys } from '../query/keys.js'
-import type { ActiveGameView, GameResultView } from '../types.js'
+import type { ActiveGameView, GameResultView, GameRewardView } from '../types.js'
 
 const frame = (sequenceNumber: number, payload: GameEvent) => ({
   aggregateId: 'g1',
@@ -85,39 +86,101 @@ describe('useGameStream', () => {
 })
 
 describe('useGameResult', () => {
-  afterEach(() => vi.useRealTimers())
+  const RESULT_PATH = '/api/games/g1/result'
+  const LIVE_PATH = '/api/live/game-reward/g1%3Au1'
+  const DESTINATION = '/topic/live/game-reward/g1:u1'
+  const result = {
+    myScore: 100,
+    botGame: false,
+    reward: null,
+    progression: { rating: 1200, peakRating: 1200, ratedGames: 6 },
+    topicMastery: {
+      xp: 0,
+      xpGained: 0,
+      tier: 'NOVICE',
+      nextTier: 'APPRENTI',
+      tierProgressPercent: 0,
+      tierRemainingXp: 100,
+    },
+    eloDelta: 0,
+    rated: false,
+    opponentRating: 1000,
+    opponentEloDelta: 0,
+    opponentRated: false,
+    badges: [],
+  } as unknown as GameResultView
+  const reward = (version: number, opponentRating: number | null = null): LiveUpdate<GameRewardView> => ({
+    view: 'game-reward',
+    key: 'g1:u1',
+    version,
+    payload: {
+      reward: { xp: 130, victoryBonus: 30 },
+      rating: 1212,
+      peakRating: 1212,
+      ratedGames: 7,
+      topicMastery: {
+        xp: 130,
+        xpGained: 130,
+        tier: 'APPRENTI',
+        nextTier: 'ADEPTE',
+        tierProgressPercent: 10,
+        tierRemainingXp: 270,
+      },
+      eloDelta: 12,
+      rated: true,
+      opponentRating,
+      opponentEloDelta: opponentRating === null ? 0 : -12,
+      opponentRated: opponentRating !== null,
+      badges: version > 1 ? [{ code: 'DUELIST_FER', label: 'Dueliste de fer', family: 'VOLUME', tier: 'FER' }] : [],
+    },
+  })
+  const notFound = () => Promise.reject({ type: LIVE_NOT_FOUND })
 
-  const result = (reward: GameResultView['reward'], botGame = false) => ({ reward, botGame }) as GameResultView
+  function render(live: () => unknown) {
+    const realtime = fakeRealtime()
+    const http = fakeHttp({ get: (path) => (path === RESULT_PATH ? result : live()) })
+    const rendered = renderWithJoutio(() => useGameResult('g1', 'u1'), { http, realtime: realtime.transport })
+    return { ...rendered, http, realtime }
+  }
 
-  it('reads the result again while the reward is missing, then never again', async () => {
-    vi.useFakeTimers()
-    const answers = [result(null), result(null), result({ xp: 120, victoryBonus: 30 })]
-    const http = fakeHttp({ get: () => answers.shift() ?? result({ xp: 120, victoryBonus: 30 }) })
-    const { result: hook } = renderWithJoutio(() => useGameResult('g1'), { http })
+  it('reads the result once and shows the reward pushed later, without any periodic read', async () => {
+    const { result: hook, http, realtime } = render(notFound)
 
-    await act(async () => vi.advanceTimersByTimeAsync(0))
+    await waitFor(() => expect(hook.current.data?.myScore).toBe(100))
     expect(hook.current.data?.reward).toBeNull()
-    await act(async () => vi.advanceTimersByTimeAsync(REWARD_POLL.intervalMs))
-    await act(async () => vi.advanceTimersByTimeAsync(REWARD_POLL.intervalMs))
-    await act(async () => vi.advanceTimersByTimeAsync(10))
-    expect(hook.current.data?.reward).toEqual({ xp: 120, victoryBonus: 30 })
-    await act(async () => vi.advanceTimersByTimeAsync(REWARD_POLL.intervalMs * 5))
-    expect(http.get).toHaveBeenCalledTimes(3)
+    expect(realtime.subscribed(DESTINATION)).toBe(true)
+
+    act(() => realtime.push(DESTINATION, reward(1)))
+    await waitFor(() => expect(hook.current.data?.reward).toEqual({ xp: 130, victoryBonus: 30 }))
+    expect(hook.current.data?.progression).toEqual({ rating: 1212, peakRating: 1212, ratedGames: 7 })
+    expect(hook.current.data?.opponentRating).toBe(1000)
+
+    act(() => realtime.push(DESTINATION, reward(2, 988)))
+    await waitFor(() => expect(hook.current.data?.opponentRating).toBe(988))
+    expect(hook.current.data?.badges.map((badge) => badge.code)).toEqual(['DUELIST_FER'])
+    expect(hook.current.data?.opponentRating).toBe(988)
+    expect(hook.current.data?.opponentEloDelta).toBe(-12)
+
+    expect(http.get.mock.calls.map(([path]) => path).sort()).toEqual([RESULT_PATH, LIVE_PATH])
   })
 
-  it('does not wait for a reward on a training game', async () => {
-    vi.useFakeTimers()
-    const http = fakeHttp({ get: () => result(null, true) })
-    renderWithJoutio(() => useGameResult('g1'), { http })
-    await act(async () => vi.advanceTimersByTimeAsync(REWARD_POLL.intervalMs * 3))
-    expect(http.get).toHaveBeenCalledTimes(1)
+  it('shows a reward already computed from the first read', async () => {
+    const { result: hook } = render(() => reward(1))
+    await waitFor(() => expect(hook.current.data?.reward).toEqual({ xp: 130, victoryBonus: 30 }))
   })
 
-  it('gives up after REWARD_POLL.reads reads', async () => {
-    vi.useFakeTimers()
-    const http = fakeHttp({ get: () => result(null) })
-    renderWithJoutio(() => useGameResult('g1'), { http })
-    await act(async () => vi.advanceTimersByTimeAsync(REWARD_POLL.intervalMs * (REWARD_POLL.reads + 5)))
-    expect(http.get).toHaveBeenCalledTimes(REWARD_POLL.reads)
+  it('keeps the result rating when the reward has none', async () => {
+    const old = reward(1)
+    const { result: hook } = render(() => ({ ...old, payload: { ...old.payload, rating: null } }))
+    await waitFor(() => expect(hook.current.data?.reward).toEqual({ xp: 130, victoryBonus: 30 }))
+    expect(hook.current.data?.progression.rating).toBe(1200)
+  })
+
+  it('reads nothing live without the player', () => {
+    const realtime = fakeRealtime()
+    const http = fakeHttp({ get: () => result })
+    renderWithJoutio(() => useGameResult('g1', undefined), { http, realtime: realtime.transport })
+    expect(realtime.subscribed(DESTINATION)).toBe(false)
+    expect(http.get).not.toHaveBeenCalledWith(LIVE_PATH, expect.anything())
   })
 })

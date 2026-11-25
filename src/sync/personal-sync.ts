@@ -118,8 +118,7 @@ export function useJoutioSync(userId: string | undefined) {
 
   useSubscription(userId ? `/topic/achievements/${userId}` : undefined, readAchievement, (achievement) => {
     if (!userId) return
-    // Badge ou titre débloqué : la séquence du résultat relit sa partie tout de suite ; le reste sera relu à l'ouverture.
-    if (achievement.kind === 'BADGE' && achievement.gameId) refresh(client, [gameKeys.result(achievement.gameId)])
+    // Badge ou titre débloqué : relu à l'ouverture. Les badges d'un duel arrivent par sa récompense vivante.
     markStale(client, [
       meKeys.account(),
       meKeys.rewards(),

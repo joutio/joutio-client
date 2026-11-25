@@ -15,7 +15,7 @@ de la donnée serveur et des hooks ; un module = aide pure sans hook.
 
 | `@joutio/client/<sous-chemin>` | Contenu |
 |---|---|
-| `game` | partie, manches, résultat : `Game` (classe réagissant aux `GameEvent`), arène (`Arena.sceneAt`), horloge (`ClockState`), règles du duel, lectures `/api/games` et commandes (réponse, abandon), `useGameStream` (avec `resync()` ; la fin de partie retire la partie de `useActiveGames` et marque périmées les vues que son résultat change, `cache/game-over.ts`), `useGameResult` (relu tant que la récompense manque, `REWARD_POLL`) |
+| `game` | partie, manches, résultat : `Game` (classe réagissant aux `GameEvent`), arène (`Arena.sceneAt`), horloge (`ClockState`), règles du duel, lectures `/api/games` et commandes (réponse, abandon), `useGameStream` (avec `resync()` ; la fin de partie retire la partie de `useActiveGames` et marque périmées les vues que son résultat change, `cache/game-over.ts`), `useGameResult(gameId, userId)` (lu une fois, récompense vivante `useGameReward` superposée par `withReward`) |
 | `rooms` | salles, défis compris (un défi est une salle `INVITED`) et appariement : `Room` et `Matchmaking` (classes réagissant aux `RoomEvent`/`MatchmakingEvent`), étapes de préparation, relances (`reminderState`, `invitationReminderDelay`), sections de l'onglet Défis (`defisSections`), lectures (`useMyRooms`, `useDefis`, `useDefisBadge`, `useIncomingRematch`, `useRoom`), flux (`useRoomStream`, `useMatchmakingStream`, `useJoinRefusal`), mutations (défier, salon, bot, accepter, refuser, annuler, relancer, appariement) |
 | `authoring` | atelier : rôles, actions sur une question, brouillons, plan de modifications, signalements, plafonds, titres par palier, schémas des formulaires d'atelier, lectures et commandes (sujets champ par champ, questions, équipe, modération, signalements) |
 | `profile` | profil public : règles du pseudonyme et de la date de naissance, présence, progression (XP, Elo, badges, titres), schémas pseudonyme/date de naissance, lectures `/api/profiles/{id}/*` (dont l'historique paginé) et commandes (pseudonyme, bio, pays, bannière, langue, avatar) |
@@ -85,8 +85,7 @@ L'entrée racine réexporte tout, sauf `i18n` (sous-chemin `@joutio/client/core/
   relecture au succès. Les mutations ne prennent pas de callbacks : l'app passe les siens à `mutate`.
 - **Fraîcheur** : la politique est celle de `createJoutioQueryClient` ; aucun hook ne fixe `staleTime`, `retry` ni
   `refetchInterval`. Exceptions, toutes portées par TanStack (jamais un timer de la lib) : le renvoi d'une réponse de
-  manche (`useAnswerQuestion`) ; le résultat d'un duel relu toutes les 1,5 s tant que sa récompense manque, 20 fois au
-  plus (`REWARD_POLL`, aucun canal ne la porte) ; l'historique d'un agrégat neuf relu sur 404 pendant ≈ 5 s avant
+  manche (`useAnswerQuestion`) ; l'historique d'un agrégat neuf relu sur 404 pendant ≈ 5 s avant
   « introuvable » (`NEW_AGGREGATE_GRACE`, `fetchQuery` à `retry`/`retryDelay`, clé `streams` à `gcTime: 0`).
 - **Listes paginées** : `infiniteQueryOptions({ queryKey, ...pageQuery(fetch | undefined) })`, jamais
   `getNextPageParam: nextPage` à côté d'un `skipToken` (TypeScript déduirait les pages du rappel de pagination).

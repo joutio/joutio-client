@@ -1,16 +1,15 @@
 import { queryOptions, skipToken, useQuery } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import type { HttpClient } from '../../../core/http.js'
+import { useLiveQuery } from '../../../core/realtime/use-live-query.js'
 import { useJoutio } from '../../../core/runtime/context.js'
+import { withReward } from '../domain/result.js'
 import { getActiveGames, getGameResult, getServerTime } from '../services/game-query.service.js'
 import { gameKeys } from '../query/keys.js'
-import type { GameResultView } from '../types.js'
+import type { GameResultView, GameRewardView } from '../types.js'
 
-/** Relecture du résultat tant que la récompense manque : 1,5 s, 20 lectures au plus (≈ 30 s). */
-export const REWARD_POLL = { intervalMs: 1_500, reads: 20 } as const
-
-/** Le résultat attend encore sa récompense (projection en retard) et peut encore être relu. */
-const awaitsReward = (result: GameResultView | undefined, reads: number) =>
-  result !== undefined && result.reward === null && !result.botGame && reads < REWARD_POLL.reads
+/** Vue vivante de la récompense d'un duel, côté BFF. */
+export const GAME_REWARD_VIEW = 'game-reward'
 
 export const gameQueries = {
   serverTime: (http: HttpClient) =>
@@ -20,18 +19,11 @@ export const gameQueries = {
       queryKey: gameKeys.active(userId),
       queryFn: userId ? ({ signal }) => getActiveGames(http, signal) : skipToken,
     }),
-  /**
-   * Résultat d'un duel. Exception documentée au « jamais de relecture d'elle-même » : aucun canal ne porte la
-   * récompense, calculée après la fin ; tant qu'elle manque (`reward: null`, hors entraînement), le résultat est relu
-   * toutes les `REWARD_POLL.intervalMs` par TanStack (`refetchInterval`), `REWARD_POLL.reads` lectures au plus, puis
-   * plus jamais. Les badges suivent l'achievement `BADGE` (`useJoutioSync`).
-   */
+  /** Résultat d'un duel, lu une fois : il ne change plus après la partie, hors récompense (vue vivante). */
   result: (http: HttpClient, gameId: string | undefined) =>
     queryOptions({
       queryKey: gameKeys.result(gameId),
       queryFn: gameId ? ({ signal }) => getGameResult(http, gameId, signal) : skipToken,
-      refetchInterval: (query) =>
-        awaitsReward(query.state.data, query.state.dataUpdateCount) ? REWARD_POLL.intervalMs : false,
     }),
 }
 
@@ -47,8 +39,28 @@ export function useActiveGames(userId: string | undefined) {
   return useQuery(gameQueries.active(http, userId))
 }
 
-/** Résultat d'un duel, revue des manches comprise ; relu de lui-même tant que la récompense manque (`REWARD_POLL`). */
-export function useGameResult(gameId: string | undefined) {
+/**
+ * Récompense d'un duel vue par ce joueur, poussée par profile à chaque écriture (XP des deux joueurs, badges) ;
+ * `null` tant qu'il n'est pas récompensé.
+ */
+export function useGameReward(gameId: string | undefined, userId: string | undefined) {
+  return useLiveQuery<GameRewardView, GameRewardView | null>(
+    {
+      queryKey: gameKeys.reward(gameId, userId),
+      view: GAME_REWARD_VIEW,
+      key: gameId && userId ? `${gameId}:${userId}` : null,
+    },
+    (value) => value?.payload ?? null,
+  )
+}
+
+/**
+ * Résultat d'un duel vu par ce joueur, revue des manches comprise : lu une fois, avec la récompense vivante
+ * (`useGameReward`) superposée dès qu'elle arrive. Aucune relecture.
+ */
+export function useGameResult(gameId: string | undefined, userId: string | undefined) {
   const { http } = useJoutio()
-  return useQuery(gameQueries.result(http, gameId))
+  const reward = useGameReward(gameId, userId).data
+  const select = useCallback((result: GameResultView) => withReward(result, reward), [reward])
+  return useQuery({ ...gameQueries.result(http, gameId), select })
 }

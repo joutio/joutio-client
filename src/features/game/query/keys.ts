@@ -1,5 +1,6 @@
 import { typed } from '../../../core/query/keys.js'
-import type { ActiveGameView, GameResultView } from '../types.js'
+import type { LiveValue } from '../../../core/realtime/use-live-query.js'
+import type { ActiveGameView, GameResultView, GameRewardView } from '../types.js'
 
 export const gameKeys = {
   root: ['games'] as const,
@@ -8,6 +9,9 @@ export const gameKeys = {
   /** Toutes les listes de parties en cours (préfixe). */
   actives: () => ['games', 'active'] as const,
   result: (gameId: string | undefined) => typed<GameResultView>()(['games', 'detail', gameId, 'result']),
+  /** Récompense du duel vue par ce joueur (vue vivante `game-reward`). */
+  reward: (gameId: string | undefined, userId: string | undefined) =>
+    typed<LiveValue<GameRewardView>>()(['games', 'detail', gameId, 'reward', userId]),
   /** Horloge du serveur (`/api/clock`). */
   serverTime: () => typed<{ epochMillis: number }>()(['clock']),
   mutations: {
