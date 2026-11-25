@@ -3,10 +3,10 @@
  * chaque reconnexion), puis entretien uniquement par abonnement live. I/O injecté : l'app fournit
  * `source.load` (historique REST via son `HttpClient`) et `source.subscribe` (son transport STOMP).
  *
- * Contrat : la livraison est **en ordre** par agrégat (topic Kafka à une partition → ordre total,
- * broker STOMP simple). Le moteur ne fait donc que dédupliquer par `sequenceNumber` (REST et WS se
- * chevauchent) et tamponner les trames live arrivées pendant le chargement de l'historique ; il ne
- * compense ni le désordre ni les trous : une reconnexion rejoue l'historique complet.
+ * Contrat : la livraison est **en ordre** par agrégat (vue vivante du BFF, broker STOMP simple). Le moteur
+ * déduplique par `sequenceNumber` (REST et WS se chevauchent) et tamponne les trames live arrivées pendant le
+ * chargement de l'historique. Un **trou** de séquence (abonné qui rejoint un flux déjà ouvert : le BFF ne lui envoie
+ * que le dernier événement) relit l'historique tout de suite ; une reconnexion le relit aussi.
  */
 
 /** Enveloppe d'un événement d'agrégat, identique en REST (historique) et en STOMP (`EventEnvelopeResponse` du BFF). */
@@ -165,6 +165,7 @@ export class EventStream<T, S> {
       for (const envelope of merge) {
         if (envelope.sequenceNumber <= this.lastSequence) continue
         if (envelope.sequenceNumber === this.lastSequence + 1) this.applyEnvelope(envelope)
+        else this.reloadQueued = true // trou : l'historique relu juste après le comble
       }
       this.everLoaded = true
       this.status = { loaded: true, notFound: false }
@@ -195,12 +196,15 @@ export class EventStream<T, S> {
       return
     }
     if (envelope.sequenceNumber <= this.lastSequence) return
-    // Livraison en ordre : un numéro manquant (saut) est corrigé par la prochaine reconnexion.
     if (envelope.sequenceNumber === this.lastSequence + 1) {
       this.applyEnvelope(envelope)
       this.emit()
+      return
     }
+    // Trou de séquence : relire l'historique, qui contient déjà cet événement (émis au commit).
+    this.requestReload()
   }
+
   private applyEnvelope(envelope: EventEnvelope<T>): void {
     const next = this.options.apply(this.state, envelope.payload)
     // Garde défensive : ne jamais corrompre l'état avec `undefined`.

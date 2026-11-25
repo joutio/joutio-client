@@ -82,6 +82,20 @@ describe('EventStream', () => {
     stream.stop()
   })
 
+  it('relit l’historique sur un trou de séquence (abonné qui rejoint un flux ouvert)', async () => {
+    const history = [envelope(0), envelope(1)]
+    const { stream, load, push } = setup(history)
+    await vi.waitFor(() => expect(stream.getStatus().loaded).toBe(true))
+    history.push(envelope(2), envelope(3))
+    push(3)
+    await vi.waitFor(() => expect(stream.getSnapshot()).toEqual([0, 1, 2, 3]))
+    expect(load).toHaveBeenCalledTimes(2)
+    push(3)
+    push(4)
+    expect(stream.getSnapshot()).toEqual([0, 1, 2, 3, 4])
+    expect(load).toHaveBeenCalledTimes(2)
+  })
+
   it('404 définitif : notFound', async () => {
     const fresh = new EventStream<Payload, number[]>({
       key: 'game:g1',
