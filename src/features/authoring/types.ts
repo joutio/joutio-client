@@ -215,14 +215,23 @@ export interface SetMemberCommand {
   role: TeamRole
 }
 
-/** `POST /api/questions/{id}/reports` : signalement d'une question. */
+/**
+ * `POST /api/questions/{id}/reports` : signalement d'une question depuis la revue d'une partie terminée (`gameId`,
+ * participant, question réellement jouée). `language` : langue dans laquelle la question a été lue.
+ */
 export interface QuestionReportRequest {
+  gameId: string
   reasons: QuestionReportReason[]
   comment?: string
+  language?: Language
 }
 
-/** `POST /api/profiles/{userId}/reports` : signalement d'un joueur. */
+/**
+ * `POST /api/profiles/{userId}/reports` : signalement d'un joueur. `gameId` : partie terminée d'où part le
+ * signalement (participant, adversaire humain), absent depuis une fiche joueur.
+ */
 export interface UserReportRequest {
   reasons: UserReportReason[]
   comment?: string
+  gameId?: string
 }

@@ -7,6 +7,7 @@ import type { NotificationCategory, NotificationView } from '../types.js'
 import {
   readAllNotifications,
   readNotification,
+  removeAllNotifications,
   removeNotification,
   setNotificationPreference,
 } from '../services/notifications-command.service.js'
@@ -117,6 +118,47 @@ export function useRemoveNotification() {
                 },
         ),
         shiftUnread(client, removed.readAt === null ? -1 : 0),
+      ])
+    },
+  })
+}
+
+/** Remet à leur place les notifications retirées qui ne sont pas revenues entre temps. */
+const restoreInto = (current: readonly NotificationView[], removed: readonly NotificationView[]) =>
+  removed.reduce<NotificationView[]>(
+    (items, item, index) =>
+      items.some((other) => other.notificationId === item.notificationId)
+        ? items
+        : [...items.slice(0, index), item, ...items.slice(index)],
+    [...current],
+  )
+
+/**
+ * Tout supprimer : la boîte se vide et la pastille tombe à zéro tout de suite. À l'échec, seules les notifications
+ * retirées reviennent, à leur place, et la pastille remonte du même nombre.
+ */
+export function useRemoveAllNotifications() {
+  return useOptimisticMutation({
+    mutationKey: notificationKeys.mutations.removeAll(),
+    mutationFn: (_: void, { http }) => removeAllNotifications(http),
+    touches: () => [notificationKeys.list(), notificationKeys.unreadCount()],
+    apply: (client) => {
+      const removed = client.getQueryData(notificationKeys.list())?.pages.map((page) => page.content) ?? []
+      const count = client.getQueryData(notificationKeys.unreadCount())?.count ?? 0
+      return undoAll([
+        change(
+          client,
+          { queryKey: notificationKeys.list(), exact: true },
+          inInbox(() => []),
+          (data) => ({
+            ...data,
+            pages: data.pages.map((page, index) => ({
+              ...page,
+              content: restoreInto(page.content, removed[index] ?? []),
+            })),
+          }),
+        ),
+        shiftUnread(client, -count),
       ])
     },
   })

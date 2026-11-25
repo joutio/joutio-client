@@ -120,4 +120,55 @@ describe('EventStream', () => {
     raw(JSON.stringify({ sequenceNumber: 1 }))
     expect(stream.getSnapshot()).toEqual([0])
   })
+
+  it('resync() rejoue l’historique à la demande', async () => {
+    const { stream, load } = setup([envelope(0)])
+    await vi.waitFor(() => expect(stream.getStatus().loaded).toBe(true))
+    load.mockResolvedValueOnce([envelope(0), envelope(1)])
+    stream.resync()
+    await vi.waitFor(() => expect(stream.getSnapshot()).toEqual([0, 1]))
+    expect(load).toHaveBeenCalledTimes(2)
+    stream.stop()
+    stream.resync()
+    expect(load).toHaveBeenCalledTimes(2)
+  })
+
+  it('onEvent suit chaque événement replié, avec l’état à jour', async () => {
+    const seen: [number[], number][] = []
+    const stream = new EventStream<Payload, number[]>({
+      key: 'game:g1',
+      initial: () => [],
+      apply: (state, payload) => [...state, payload.n],
+      onEvent: (state, payload) => seen.push([state, payload.n]),
+      source: { load: () => Promise.resolve([envelope(0), envelope(1)]), subscribe: () => () => {} },
+    })
+    stream.start()
+    await vi.waitFor(() => expect(stream.getStatus().loaded).toBe(true))
+    expect(seen).toEqual([
+      [[0], 0],
+      [[0, 1], 1],
+    ])
+    stream.stop()
+  })
+
+  it('le lecteur d’historique sait si le flux attend encore son premier chargement', async () => {
+    const fresh: boolean[] = []
+    const stream = new EventStream<Payload, number[]>(
+      {
+        key: 'game:g1',
+        initial: () => [],
+        apply: (state, payload) => [...state, payload.n],
+        source: { load: () => Promise.resolve([envelope(0)]), subscribe: () => () => {} },
+      },
+      (load, isFresh) => {
+        fresh.push(isFresh())
+        return load()
+      },
+    )
+    stream.start()
+    await vi.waitFor(() => expect(stream.getStatus().loaded).toBe(true))
+    stream.resync()
+    await vi.waitFor(() => expect(fresh).toEqual([true, false]))
+    stream.stop()
+  })
 })

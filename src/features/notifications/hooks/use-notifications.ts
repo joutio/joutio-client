@@ -1,6 +1,6 @@
 import { infiniteQueryOptions, queryOptions, useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import type { HttpClient } from '../../../core/http.js'
-import { MAX_PAGES, nextPage } from '../../../core/query/pages.js'
+import { pageQuery } from '../../../core/query/pages.js'
 import { useJoutio } from '../../../core/runtime/context.js'
 import {
   getNotificationPreferences,
@@ -13,10 +13,7 @@ export const notificationQueries = {
   list: (http: HttpClient) =>
     infiniteQueryOptions({
       queryKey: notificationKeys.list(),
-      queryFn: ({ pageParam, signal }) => getNotificationsPage(http, pageParam, signal),
-      initialPageParam: 0,
-      getNextPageParam: nextPage,
-      maxPages: MAX_PAGES,
+      ...pageQuery((page, signal) => getNotificationsPage(http, page, signal)),
     }),
   unreadCount: (http: HttpClient) =>
     queryOptions({ queryKey: notificationKeys.unreadCount(), queryFn: ({ signal }) => getUnreadCount(http, signal) }),

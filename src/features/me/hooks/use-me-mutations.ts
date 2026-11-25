@@ -9,6 +9,7 @@ import {
   acceptTerms,
   deleteAccount,
   requestDeletionCode,
+  setAutoTrain,
   setBirthDate,
   updateInterests,
   updateLanguage,
@@ -73,6 +74,16 @@ export function useUpdateLanguage(userId: string) {
     mutationFn: (language: Language, { http }) => updateLanguage(http, userId, language),
     touches: () => [meKeys.account()],
     apply: (client, language) => changeAccount(client, { language }),
+  })
+}
+
+/** Entraînement automatique contre le bot quand une recherche d'adversaire expire (`MeView.autoTrainOnTimeout`). */
+export function useSetAutoTrain(userId: string) {
+  return useOptimisticMutation({
+    mutationKey: meKeys.mutations.autoTrain(),
+    mutationFn: (enabled: boolean, { http }) => setAutoTrain(http, userId, enabled),
+    touches: () => [meKeys.account()],
+    apply: (client, enabled) => changeAccount(client, { autoTrainOnTimeout: enabled }),
   })
 }
 

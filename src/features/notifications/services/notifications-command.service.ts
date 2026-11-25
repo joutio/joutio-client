@@ -27,6 +27,11 @@ export async function removeNotification(
   return http.delete<void>(`/api/notifications/${segment(notificationId)}`, { signal })
 }
 
+/** `DELETE /api/notifications` : vide la boîte. */
+export async function removeAllNotifications(http: HttpClient, signal?: AbortSignalLike): Promise<void> {
+  return http.delete<void>('/api/notifications', { signal })
+}
+
 /** `PUT /api/notification-preferences/{category}`. */
 export async function setNotificationPreference(
   http: HttpClient,

@@ -15,23 +15,23 @@ de la donnée serveur et des hooks ; un module = aide pure sans hook.
 
 | `@joutio/client/<sous-chemin>` | Contenu |
 |---|---|
-| `game` | partie, manches, résultat : `Game` (classe réagissant aux `GameEvent`), arène (`Arena.sceneAt`), horloge (`ClockState`), règles du duel, lectures `/api/games` et commandes (réponse, abandon), `useGameStream` |
+| `game` | partie, manches, résultat : `Game` (classe réagissant aux `GameEvent`), arène (`Arena.sceneAt`), horloge (`ClockState`), règles du duel, lectures `/api/games` et commandes (réponse, abandon), `useGameStream` (avec `resync()` ; la fin de partie retire la partie de `useActiveGames` et marque périmées les vues que son résultat change, `cache/game-over.ts`), `useGameResult` (relu tant que la récompense manque, `REWARD_POLL`) |
 | `rooms` | salles, défis compris (un défi est une salle `INVITED`) et appariement : `Room` et `Matchmaking` (classes réagissant aux `RoomEvent`/`MatchmakingEvent`), étapes de préparation, relances (`reminderState`, `invitationReminderDelay`), sections de l'onglet Défis (`defisSections`), lectures (`useMyRooms`, `useDefis`, `useDefisBadge`, `useIncomingRematch`, `useRoom`), flux (`useRoomStream`, `useMatchmakingStream`, `useJoinRefusal`), mutations (défier, salon, bot, accepter, refuser, annuler, relancer, appariement) |
 | `authoring` | atelier : rôles, actions sur une question, brouillons, plan de modifications, signalements, plafonds, titres par palier, schémas des formulaires d'atelier, lectures et commandes (sujets champ par champ, questions, équipe, modération, signalements) |
 | `profile` | profil public : règles du pseudonyme et de la date de naissance, présence, progression (XP, Elo, badges, titres), schémas pseudonyme/date de naissance, lectures `/api/profiles/{id}/*` (dont l'historique paginé) et commandes (pseudonyme, bio, pays, bannière, langue, avatar) |
-| `me` | compte connecté : `MeView`, récompenses, bloqués, disponibilité du pseudonyme, schémas de connexion (e-mail, OTP) et d'édition du profil, petits hooks à `select` (`useMyId`, `useIsPremium`…), commandes (date de naissance, CGU, centres d'intérêt, suppression) |
+| `me` | compte connecté : `MeView`, récompenses, bloqués, disponibilité du pseudonyme, schémas de connexion (e-mail, OTP) et d'édition du profil, petits hooks à `select` (`useMyId`, `useIsPremium`…), commandes (date de naissance, CGU, centres d'intérêt, entraînement auto `useSetAutoTrain`, suppression) |
 | `premium` | limites du plan (`planLimits`), sujets gelés (`isFrozen`), problèmes de limite (`QUOTA_PROBLEMS`), accroches — logique pure, aucune lecture |
 | `topics` | sujets : catalogue paginé (fusion multi-univers), facettes, fiche (`TopicOverviewView`), classements (fiche + complets paginés), DTOs du domaine, commandes (suivre / ne plus suivre) |
 | `search` | recherche globale (`useSuggestions`, terme temporisé par l'app) |
 | `social` | listes de personnes paginées (`useContacts`), mutations optimistes `useFollowPlayer` et `useBlockPlayer` |
-| `notifications` | inbox : `NotificationView`, pagination, non-lues, préférences, mutations (lire, tout lire, retirer, préférences) |
+| `notifications` | inbox : `NotificationView`, pagination, non-lues, préférences, mutations (lire, tout lire, retirer, tout supprimer, préférences) |
 | `sync` | `useJoutioSync(userId)` : seule synchronisation du cache sur les flux personnels (inbox, `ROOM_PRESENCE`, `ROOM_STATUS`, succès débloqués), montée une fois par l'app |
 | `home` | rails de l'Accueil (`HomeView`) |
 | `onboarding` | recommandations de sujets, commande de complétion |
 | `core` | transverse : `JoutioClientProvider` et `useJoutio` (runtime : `http`, `realtime`, `clock`), `HttpClient` (`get`/`post`/`put`/`delete` avec `{ body, query, signal }`), `AbortSignalLike`, `segment()`, `optimisticId` — les apps implémentent le client HTTP (`lib/api`) et le transport |
 | `core/types` | contrats communs du BFF : `ApiError` (RFC 7807), `PageResponse`, `IdResponse`, `Language` |
-| `core/query` | politique du cache (`createJoutioQueryClient`, `shouldRetry`), clés typées (`typed`), pagination (`nextPage`, `keepPreviousWhen`, `MAX_PAGES`), optimisme à retour ciblé (`change`, `changeFields`, `removeFrom`, `undoAll`, `useOptimisticMutation`, `useOptimisticBatch`, `useCommand`, `PartialFailure`) |
-| `core/realtime` | transport (`RealtimeTransport`, fourni au provider), `useEventStream` (agrégat : catch-up REST + dédup par séquence + reconnexion) et `useSubscription` (éphémère : parse + handler + resynchronisation) |
+| `core/query` | politique du cache (`createJoutioQueryClient`, `shouldRetry`), clés typées (`typed`), pagination (`pageQuery`, `nextPage`, `keepPreviousWhen`, `MAX_PAGES`), vues périmées sans relecture (`markStale`), optimisme à retour ciblé (`change`, `changeFields`, `removeFrom`, `undoAll`, `useOptimisticMutation`, `useOptimisticBatch`, `useCommand`, `PartialFailure`) |
+| `core/realtime` | transport (`RealtimeTransport`, fourni au provider), `useEventStream` (agrégat : catch-up REST + dédup par séquence + reconnexion, `resync()` à la demande, délai de grâce d'un agrégat neuf `NEW_AGGREGATE_GRACE`) et `useSubscription` (éphémère : parse + handler + resynchronisation) |
 | `core/geo` | pays ISO 3166-1 alpha-2 : liste, noms FR/EN embarqués, tri, recherche sans accents, drapeaux |
 | `core/share` | liens universels `go.joutio.com` : construction et analyse |
 | `core/i18n` | textes FR/EN des deux apps (`fr.ts` fait foi, `en.ts` typé), `translate`, `formatNumber`, `formatDate`, `dayLabel`, `pluralOf`, `tierKey`, `categoryKey`, `avatarLabel` (dictionnaire de l'éditeur d'avatar, `avatar/`). Préfixes : aucun (commun), `mobile.`, `ds.` |
@@ -78,8 +78,15 @@ L'entrée racine réexporte tout, sauf `i18n` (sous-chemin `@joutio/client/core/
   il renvoie l'inverse de **ce seul** changement (champs écrits, delta, entrée insérée ou retirée), appliqué sur la
   valeur courante à l'échec ; en lot, seuls les refus reviennent. Jamais de snapshot restauré en bloc, jamais de
   relecture au succès. Les mutations ne prennent pas de callbacks : l'app passe les siens à `mutate`.
-- **Fraîcheur** : la politique est celle de `createJoutioQueryClient` ; aucun hook ne fixe `staleTime` ni `retry`
-  (seule exception : le renvoi d'une réponse de manche, `useAnswerQuestion`).
+- **Fraîcheur** : la politique est celle de `createJoutioQueryClient` ; aucun hook ne fixe `staleTime`, `retry` ni
+  `refetchInterval`. Exceptions, toutes portées par TanStack (jamais un timer de la lib) : le renvoi d'une réponse de
+  manche (`useAnswerQuestion`) ; le résultat d'un duel relu toutes les 1,5 s tant que sa récompense manque, 20 fois au
+  plus (`REWARD_POLL`, aucun canal ne la porte) ; l'historique d'un agrégat neuf relu sur 404 pendant ≈ 5 s avant
+  « introuvable » (`NEW_AGGREGATE_GRACE`, `fetchQuery` à `retry`/`retryDelay`, clé `streams` à `gcTime: 0`).
+- **Listes paginées** : `infiniteQueryOptions({ queryKey, ...pageQuery(fetch | undefined) })`, jamais
+  `getNextPageParam: nextPage` à côté d'un `skipToken` (TypeScript déduirait les pages du rappel de pagination).
+- **Fin de partie** : le flux de partie (`onEvent` de `useEventStream`) retire la partie des parties en cours et
+  marque périmées (`markStale`) compte, récompenses, profils et historiques des deux joueurs, fiche du sujet, accueil.
 - `userId` est passé explicitement par l'app (lu dans sa session) ; un paramètre absent donne `skipToken` avec la
   clé de la même fabrique, jamais une clé contenant `''`.
 - `core` n'importe aucune feature (ESLint) ; une feature qui écrit dans le cache d'une autre importe ses

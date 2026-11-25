@@ -1,6 +1,6 @@
 import { infiniteQueryOptions, queryOptions, skipToken } from '@tanstack/react-query'
 import type { HttpClient } from '../../../core/http.js'
-import { keepPreviousWhen, MAX_PAGES, nextPage } from '../../../core/query/pages.js'
+import { keepPreviousWhen, pageQuery } from '../../../core/query/pages.js'
 import type { HistoryFilters } from '../types.js'
 import {
   getActivity,
@@ -49,10 +49,7 @@ export const profileQueries = {
   history: (http: HttpClient, userId: string | undefined, filters: HistoryFilters) =>
     infiniteQueryOptions({
       queryKey: profileKeys.history(userId, filters),
-      queryFn: userId ? ({ pageParam, signal }) => getHistoryPage(http, userId, filters, pageParam, signal) : skipToken,
-      initialPageParam: 0,
-      getNextPageParam: nextPage,
-      maxPages: MAX_PAGES,
+      ...pageQuery(userId ? (page, signal) => getHistoryPage(http, userId, filters, page, signal) : undefined),
       placeholderData: keepPreviousWhen((key: readonly unknown[]) => userId !== undefined && key[1] === userId),
     }),
 }

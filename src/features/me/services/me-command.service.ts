@@ -43,6 +43,16 @@ export async function requestDeletionCode(http: HttpClient, signal?: AbortSignal
   return http.post<void>('/api/me/deletion-code', { signal })
 }
 
+/** `PUT /api/profiles/{id}/auto-train` : entraînement contre le bot quand une recherche expire. */
+export async function setAutoTrain(
+  http: HttpClient,
+  userId: string,
+  enabled: boolean,
+  signal?: AbortSignalLike,
+): Promise<void> {
+  return http.put<void>(`/api/profiles/${segment(userId)}/auto-train`, { body: { enabled }, signal })
+}
+
 /** `PUT /api/profiles/{id}/language` : langue du compte. */
 export async function updateLanguage(
   http: HttpClient,

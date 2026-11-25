@@ -5,7 +5,7 @@ import { deferred, fakeHttp, renderWithJoutio } from '../../../testing/joutio.js
 import { profileKeys } from '../../profile/query/keys.js'
 import type { PlayerProfileView } from '../../profile/types.js'
 import { useIsPremium, useMe, useMyId, usePseudonymAvailability } from '../hooks/use-me.js'
-import { useUpdateMyProfile } from '../hooks/use-me-mutations.js'
+import { useSetAutoTrain, useUpdateLanguage, useUpdateMyProfile } from '../hooks/use-me-mutations.js'
 import { meKeys } from '../query/keys.js'
 import type { MeView } from '../types.js'
 
@@ -68,5 +68,46 @@ describe('useUpdateMyProfile', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(client.getQueryData(meKeys.account())?.premium).toBe(false)
     expect(http.get).not.toHaveBeenCalled()
+  })
+})
+
+describe('useSetAutoTrain', () => {
+  it('switches the setting on the account before the answer, without reading after', async () => {
+    const pending = deferred()
+    const http = fakeHttp({ put: () => pending.promise })
+    const { result, client } = renderWithJoutio(() => useSetAutoTrain('u1'), { http })
+    client.setQueryData(meKeys.account(), { ...me, autoTrainOnTimeout: true })
+
+    act(() => result.current.mutate(false))
+    await waitFor(() => expect(client.getQueryData(meKeys.account())?.autoTrainOnTimeout).toBe(false))
+    expect(http.put).toHaveBeenCalledWith('/api/profiles/u1/auto-train', {
+      body: { enabled: false },
+      signal: undefined,
+    })
+
+    await act(async () => pending.resolve())
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(client.getQueryData(meKeys.account())?.autoTrainOnTimeout).toBe(false)
+    expect(http.get).not.toHaveBeenCalled()
+  })
+
+  it('restores only the setting on error, a concurrent change of the account stays', async () => {
+    const refused = deferred()
+    const http = fakeHttp({ put: (path) => (path.endsWith('/auto-train') ? refused.promise : undefined) })
+    const { result, client } = renderWithJoutio(
+      () => ({ train: useSetAutoTrain('u1'), language: useUpdateLanguage('u1') }),
+      {
+        http,
+      },
+    )
+    client.setQueryData(meKeys.account(), { ...me, autoTrainOnTimeout: true, language: 'fr' })
+
+    act(() => result.current.train.mutate(false))
+    await waitFor(() => expect(client.getQueryData(meKeys.account())?.autoTrainOnTimeout).toBe(false))
+    await act(async () => result.current.language.mutateAsync('en'))
+
+    await act(async () => refused.reject(new Error('refused')))
+    await waitFor(() => expect(result.current.train.isError).toBe(true))
+    expect(client.getQueryData(meKeys.account())).toMatchObject({ autoTrainOnTimeout: true, language: 'en' })
   })
 })

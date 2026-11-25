@@ -1,6 +1,6 @@
-import { infiniteQueryOptions, skipToken, useInfiniteQuery } from '@tanstack/react-query'
+import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query'
 import type { HttpClient } from '../../../core/http.js'
-import { keepPreviousWhen, MAX_PAGES, nextPage } from '../../../core/query/pages.js'
+import { keepPreviousWhen, pageQuery } from '../../../core/query/pages.js'
 import { useJoutio } from '../../../core/runtime/context.js'
 import { getContactsPage } from '../services/contacts-query.service.js'
 import type { ContactsList } from '../types.js'
@@ -12,12 +12,9 @@ export const contactQueries = {
     const { userId, direction, query, sort } = list
     return infiniteQueryOptions({
       queryKey: contactKeys.list({ userId, direction, query, sort }),
-      queryFn: userId
-        ? ({ pageParam, signal }) => getContactsPage(http, userId, direction, query, sort, pageParam, signal)
-        : skipToken,
-      initialPageParam: 0,
-      getNextPageParam: nextPage,
-      maxPages: MAX_PAGES,
+      ...pageQuery(
+        userId ? (page, signal) => getContactsPage(http, userId, direction, query, sort, page, signal) : undefined,
+      ),
       placeholderData: keepPreviousWhen((key: readonly unknown[]) => {
         const previous = contactKeys.listOf(key)
         return userId !== undefined && previous.userId === userId && previous.direction === direction

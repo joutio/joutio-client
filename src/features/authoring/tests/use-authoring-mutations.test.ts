@@ -2,7 +2,13 @@
 import { act, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { deferred, fakeHttp, renderWithJoutio } from '../../../testing/joutio.js'
-import { useCreateTopic, useModerateQuestion, useSaveQuestion } from '../hooks/use-authoring-mutations.js'
+import {
+  useCreateTopic,
+  useModerateQuestion,
+  useReportQuestion,
+  useReportUser,
+  useSaveQuestion,
+} from '../hooks/use-authoring-mutations.js'
 import { authoringKeys } from '../query/keys.js'
 import type { QuestionEditorView } from '../types.js'
 
@@ -72,6 +78,36 @@ describe('authoring mutations', () => {
     expect(client.getQueryData(authoringKeys.questions('t1'))?.[0]).toMatchObject({
       correctAnswer: 'B',
       openReportCount: 2,
+    })
+  })
+})
+
+describe('reports', () => {
+  it('reports a question with the game it was played in and the language it was read in', async () => {
+    const http = fakeHttp()
+    const { result } = renderWithJoutio(() => useReportQuestion(), { http })
+
+    await act(async () =>
+      result.current.mutateAsync({
+        questionId: 'q1',
+        report: { gameId: 'g1', reasons: ['ANSWERS'], comment: 'B est juste', language: 'en' },
+      }),
+    )
+    expect(http.post).toHaveBeenCalledWith('/api/questions/q1/reports', {
+      body: { gameId: 'g1', reasons: ['ANSWERS'], comment: 'B est juste', language: 'en' },
+      signal: undefined,
+    })
+    expect(http.get).not.toHaveBeenCalled()
+  })
+
+  it('reports a player from a finished game', async () => {
+    const http = fakeHttp()
+    const { result } = renderWithJoutio(() => useReportUser(), { http })
+
+    await act(async () => result.current.mutateAsync({ userId: 'u2', report: { reasons: ['CHEATING'], gameId: 'g1' } }))
+    expect(http.post).toHaveBeenCalledWith('/api/profiles/u2/reports', {
+      body: { reasons: ['CHEATING'], gameId: 'g1' },
+      signal: undefined,
     })
   })
 })

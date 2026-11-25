@@ -39,7 +39,21 @@ export interface EventStreamOptions<T, S> {
   /** Repli pur d'un événement sur l'état (en général une méthode `onGameEvent`/`onRoomEvent` du domaine). */
   apply: (state: S, payload: T) => S
   source: EventStreamSource<T>
+  /**
+   * Effet sur le cache après chaque événement replié, historique compris (fin de partie…). Une reconnexion rejoue
+   * l'historique : l'effet doit être idempotent.
+   */
+  onEvent?: (state: S, payload: T) => void
 }
+
+/**
+ * Lecture de l'historique : `load` tel quel par défaut. `useEventStream` la confie à TanStack Query pour le délai de
+ * grâce d'un agrégat neuf ; `fresh()` dit, à chaque échec, si le flux attend encore son premier historique.
+ */
+export type HistoryReader<T> = (
+  load: () => Promise<EventEnvelope<T>[]>,
+  fresh: () => boolean,
+) => Promise<EventEnvelope<T>[]>
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
 
@@ -63,8 +77,9 @@ const isNotFoundError = (error: unknown): boolean => {
  * partagent la même enveloppe). À chaque (re)connexion, l'historique est rejoué pour fermer la
  * fenêtre REST ↔ WS.
  *
- * Une erreur transitoire laisse le flux non chargé : la prochaine reconnexion du transport
- * rejouera l'historique (aucun timer, aucun backoff maison).
+ * Une erreur transitoire laisse le flux non chargé : la prochaine reconnexion du transport (ou `resync()`)
+ * rejouera l'historique (aucun timer, aucun backoff maison ; le délai de grâce d'un agrégat neuf passe par le
+ * `HistoryReader` que fournit `useEventStream`).
  */
 export class EventStream<T, S> {
   private readonly options: EventStreamOptions<T, S>
@@ -73,13 +88,17 @@ export class EventStream<T, S> {
   private loading = false
   private reloadQueued = false
   private started = false
+  private everLoaded = false
   private pending: EventEnvelope<T>[] = []
   private unsubscribeLive?: () => void
   private status: EventStreamStatus = { loaded: false, notFound: false }
   private readonly listeners = new Set<() => void>()
 
-  constructor(options: EventStreamOptions<T, S>) {
+  private readonly readHistory: HistoryReader<T>
+
+  constructor(options: EventStreamOptions<T, S>, readHistory: HistoryReader<T> = (load) => load()) {
     this.options = options
+    this.readHistory = readHistory
     this.state = options.initial()
   }
 
@@ -106,6 +125,14 @@ export class EventStream<T, S> {
     }
   }
 
+  /**
+   * Rejoue l'historique REST à la demande (l'app détecte un retard : chrono dépassé, manche qui ne s'ouvre pas). Même
+   * chemin qu'une reconnexion : dédup par séquence, trames live tamponnées pendant la lecture.
+   */
+  resync(): void {
+    if (this.started) this.requestReload()
+  }
+
   stop(): void {
     this.started = false
     this.pending = []
@@ -126,7 +153,7 @@ export class EventStream<T, S> {
     this.loading = true
     this.pending = []
     try {
-      const loaded = await this.options.source.load()
+      const loaded = await this.readHistory(this.options.source.load, () => this.started && !this.everLoaded)
       this.state = this.options.initial()
       this.lastSequence = -1
       for (const envelope of Array.isArray(loaded) ? loaded : []) {
@@ -139,6 +166,7 @@ export class EventStream<T, S> {
         if (envelope.sequenceNumber <= this.lastSequence) continue
         if (envelope.sequenceNumber === this.lastSequence + 1) this.applyEnvelope(envelope)
       }
+      this.everLoaded = true
       this.status = { loaded: true, notFound: false }
     } catch (error) {
       this.pending = []
@@ -173,7 +201,6 @@ export class EventStream<T, S> {
       this.emit()
     }
   }
-
   private applyEnvelope(envelope: EventEnvelope<T>): void {
     const next = this.options.apply(this.state, envelope.payload)
     // Garde défensive : ne jamais corrompre l'état avec `undefined`.
@@ -181,6 +208,7 @@ export class EventStream<T, S> {
       this.state = next
     }
     this.lastSequence = Math.max(this.lastSequence, envelope.sequenceNumber)
+    this.options.onEvent?.(this.state, envelope.payload)
   }
 
   private emit(): void {

@@ -1,4 +1,5 @@
 import { useQueryClient, type QueryClient, type QueryKey } from '@tanstack/react-query'
+import { markStale } from '../core/query/stale.js'
 import { parseEnvelope, useSubscription } from '../core/realtime/use-subscription.js'
 import { authoringKeys } from '../features/authoring/query/keys.js'
 import { gameKeys } from '../features/game/query/keys.js'
@@ -54,10 +55,6 @@ const RESYNC: QueryKey[] = [meKeys.account(), notificationKeys.root, roomKeys.mi
 
 const refresh = (client: QueryClient, keys: readonly QueryKey[]) =>
   keys.forEach((queryKey) => void client.invalidateQueries({ queryKey }))
-
-/** Vues qu'un calcul du serveur rend périmées : relues à leur prochaine ouverture, pas tout de suite. */
-const markStale = (client: QueryClient, keys: readonly QueryKey[]) =>
-  keys.forEach((queryKey) => void client.invalidateQueries({ queryKey, refetchType: 'none' }))
 
 function readNotificationEvent(body: string): PersonalNotificationEvent | undefined {
   const frame = parseEnvelope(body) as { eventType?: string; payload?: Partial<NotificationView> } | undefined

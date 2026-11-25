@@ -12,6 +12,7 @@ export const notificationKeys = {
     read: () => ['notifications', 'read'] as const,
     readAll: () => ['notifications', 'read-all'] as const,
     remove: () => ['notifications', 'remove'] as const,
+    removeAll: () => ['notifications', 'remove-all'] as const,
     preference: () => ['notifications', 'preference'] as const,
   },
 }

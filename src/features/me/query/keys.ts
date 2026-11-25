@@ -15,6 +15,7 @@ export const meKeys = {
     interests: () => ['me', 'interests'] as const,
     profile: () => ['me', 'profile'] as const,
     language: () => ['me', 'language'] as const,
+    autoTrain: () => ['me', 'auto-train'] as const,
     deletionCode: () => ['me', 'deletion-code'] as const,
     deletion: () => ['me', 'deletion'] as const,
   },
