@@ -1,3 +1,9 @@
+## [11.1.0](https://github.com/joutio/joutio-client/compare/v11.0.0...v11.1.0) (2026-11-25)
+
+### Features
+
+* fill the gaps met by the apps on 11.0.0 ([88e68da](https://github.com/joutio/joutio-client/commit/88e68daba7464f83374b4d04729785da5c602f75))
+
 ## [11.0.0](https://github.com/joutio/joutio-client/compare/v10.0.0...v11.0.0) (2026-11-24)
 
 ### ⚠ BREAKING CHANGES
