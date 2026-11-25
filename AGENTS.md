@@ -31,7 +31,7 @@ de la donnée serveur et des hooks ; un module = aide pure sans hook.
 | `core` | transverse : `JoutioClientProvider` et `useJoutio` (runtime : `http`, `realtime`, `clock`), `HttpClient` (`get`/`post`/`put`/`delete` avec `{ body, query, signal }`), `AbortSignalLike`, `segment()`, `optimisticId` — les apps implémentent le client HTTP (`lib/api`) et le transport |
 | `core/types` | contrats communs du BFF : `ApiError` (RFC 7807), `PageResponse`, `IdResponse`, `Language` |
 | `core/query` | politique du cache (`createJoutioQueryClient`, `shouldRetry`), clés typées (`typed`), pagination (`pageQuery`, `nextPage`, `keepPreviousWhen`, `MAX_PAGES`), vues périmées sans relecture (`markStale`), optimisme à retour ciblé (`change`, `changeFields`, `removeFrom`, `undoAll`, `useOptimisticMutation`, `useOptimisticBatch`, `useCommand`, `PartialFailure`) |
-| `core/realtime` | transport (`RealtimeTransport`, fourni au provider), `useEventStream` (agrégat : catch-up REST + dédup par séquence + reconnexion, `resync()` à la demande, délai de grâce d'un agrégat neuf `NEW_AGGREGATE_GRACE`) et `useSubscription` (éphémère : parse + handler + resynchronisation) |
+| `core/realtime` | transport (`RealtimeTransport`, fourni au provider), `useEventStream` (agrégat : catch-up REST + dédup par séquence + reconnexion, `resync()` à la demande, délai de grâce d'un agrégat neuf `NEW_AGGREGATE_GRACE`), `useSubscription` (éphémère : parse + handler + resynchronisation) et `useLiveQuery` (vue vivante du BFF : `LiveUpdate` versionné, lu par `GET /api/live/<vue>/{clé}` et poussé sur `/topic/live/<vue>/{clé}`, `readLive`, `newerLive`) |
 | `core/geo` | pays ISO 3166-1 alpha-2 : liste, noms FR/EN embarqués, tri, recherche sans accents, drapeaux |
 | `core/share` | liens universels `go.joutio.com` : construction et analyse |
 | `core/i18n` | textes FR/EN des deux apps (`fr.ts` fait foi, `en.ts` typé), `translate`, `formatNumber`, `formatDate`, `dayLabel`, `pluralOf`, `tierKey`, `categoryKey`, `avatarLabel` (dictionnaire de l'éditeur d'avatar, `avatar/`). Préfixes : aucun (commun), `mobile.`, `ds.` |
@@ -72,8 +72,13 @@ L'entrée racine réexporte tout, sauf `i18n` (sous-chemin `@joutio/client/core/
 - **L'app ne touche jamais au cache** (avenant ADR 0001 du 2026-11-24) : `JoutioClientProvider` reçoit `http`,
   `realtime`, `clock` et le `QueryClient` ; les hooks les lisent par `useJoutio()`. Ni `http` ni le transport ne
   sont dans une clé de cache. Aucun timer, et l'horloge vient du runtime (`clock`), jamais de `Date.now()`.
-- **Deux primitives temps réel seulement** : `useEventStream` (agrégat séquencé, avec historique REST) et
-  `useSubscription` (éphémère, sans historique). Aucun `subscribe` main dans les features.
+- **Trois primitives temps réel seulement** : `useEventStream` (agrégat séquencé, avec historique REST),
+  `useSubscription` (éphémère, sans historique) et `useLiveQuery` (valeur versionnée poussée par le BFF). Aucun
+  `subscribe` main dans les features. Une vue vivante a sa clé dans la feature propriétaire (`typed<LiveValue<T>>()`)
+  et son hook public dans la feature, au-dessus de `useLiveQuery`.
+- **Vue vivante et mutations** : la mutation qui écrit une vue vivante déclare la même portée (`mutationKey`) ;
+  pendant qu'elle tourne, les updates attendent, puis seul le plus récent s'applique s'il dépasse la version en
+  cache. Une valeur optimiste porte la version renvoyée par la commande quand le BFF la donne.
 - **Optimisme à retour ciblé** : `onMutate` annule les lectures en vol et applique le changement à toutes les vues ;
   il renvoie l'inverse de **ce seul** changement (champs écrits, delta, entrée insérée ou retirée), appliqué sur la
   valeur courante à l'échec ; en lot, seuls les refus reviennent. Jamais de snapshot restauré en bloc, jamais de
