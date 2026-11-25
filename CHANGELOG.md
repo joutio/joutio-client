@@ -1,3 +1,9 @@
+## [12.0.1](https://github.com/joutio/joutio-client/compare/v12.0.0...v12.0.1) (2026-11-25)
+
+### Bug Fixes
+
+* **realtime:** reload the history on a sequence gap ([edefc6b](https://github.com/joutio/joutio-client/commit/edefc6b8b4518d25a28f0112d0f4a6cd9d8ea9de))
+
 ## [12.0.0](https://github.com/joutio/joutio-client/compare/v11.2.0...v12.0.0) (2026-11-25)
 
 ### ⚠ BREAKING CHANGES
