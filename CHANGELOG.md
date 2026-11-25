@@ -1,3 +1,9 @@
+## [11.2.0](https://github.com/joutio/joutio-client/compare/v11.1.0...v11.2.0) (2026-11-25)
+
+### Features
+
+* **realtime:** useLiveQuery, third realtime primitive for live views ([029423b](https://github.com/joutio/joutio-client/commit/029423b63556e0f0c04e1ddc12180e0a8c2b309e))
+
 ## [11.1.0](https://github.com/joutio/joutio-client/compare/v11.0.0...v11.1.0) (2026-11-25)
 
 ### Features
