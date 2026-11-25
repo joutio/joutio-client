@@ -1,3 +1,14 @@
+## [12.0.0](https://github.com/joutio/joutio-client/compare/v11.2.0...v12.0.0) (2026-11-25)
+
+### ⚠ BREAKING CHANGES
+
+* **game:** useGameResult(gameId, userId) takes the connected
+player; REWARD_POLL is removed.
+
+### Features
+
+* **game:** duel reward as a live view, end of REWARD_POLL ([39fe7ff](https://github.com/joutio/joutio-client/commit/39fe7ff6c36cdb550a23ae561086de88c05cc6ea))
+
 ## [11.2.0](https://github.com/joutio/joutio-client/compare/v11.1.0...v11.2.0) (2026-11-25)
 
 ### Features
