@@ -5,6 +5,7 @@ import { meKeys } from '../../me/query/keys.js'
 import type { MeView } from '../../me/types.js'
 import { profileKeys } from '../../profile/query/keys.js'
 import type { PlayerCardView, PlayerProfileView, UserRefView } from '../../profile/types.js'
+import type { LiveUpdate } from '../../../core/realtime/use-live-query.js'
 import { roomKeys } from '../../rooms/query/keys.js'
 import type { RoomView } from '../../rooms/types.js'
 import { applyBlock } from '../cache/block.js'
@@ -43,11 +44,13 @@ function seeded() {
   client.setQueryData(meKeys.account(), { userId: ME, followingCount: 3, followersCount: 5 } as MeView)
   client.setQueryData(following, pages(card('bob'), card('lea')))
   client.setQueryData(followers, pages(card('lea')))
-  client.setQueryData(roomKeys.mine(), [
-    room('r1', 'lea', 'INVITED'),
-    room('r2', 'lea', 'FETCHING_PLAYERS'),
-    room('r3', 'bob', 'INVITED'),
-  ])
+  const rooms: LiveUpdate<RoomView[]> = {
+    view: 'my-rooms',
+    key: ME,
+    version: 1,
+    payload: [room('r1', 'lea', 'INVITED'), room('r2', 'lea', 'FETCHING_PLAYERS'), room('r3', 'bob', 'INVITED')],
+  }
+  client.setQueryData(roomKeys.mine(ME), rooms)
   client.setQueryData(meKeys.blocked(), [] as UserRefView[])
   return client
 }
@@ -69,7 +72,7 @@ describe('applyBlock', () => {
     expect(client.getQueryData(meKeys.account())).toMatchObject({ followingCount: 2, followersCount: 4 })
     expect(ids(client.getQueryData(following))).toEqual(['bob'])
     expect(ids(client.getQueryData(followers))).toEqual([])
-    expect(client.getQueryData(roomKeys.mine())?.map((item) => item.roomId)).toEqual(['r2', 'r3'])
+    expect(client.getQueryData(roomKeys.mine(ME))?.payload.map((item) => item.roomId)).toEqual(['r2', 'r3'])
     expect(client.getQueryData(meKeys.blocked())?.map((item) => item.userId)).toEqual(['lea'])
   })
 
@@ -93,7 +96,7 @@ describe('applyBlock', () => {
     })
     expect(ids(client.getQueryData(following))).toEqual(['bob', 'lea'])
     expect(ids(client.getQueryData(followers))).toEqual(['lea'])
-    expect(client.getQueryData(roomKeys.mine())?.map((item) => item.roomId)).toEqual(['r1', 'r2', 'r3'])
+    expect(client.getQueryData(roomKeys.mine(ME))?.payload.map((item) => item.roomId)).toEqual(['r1', 'r2', 'r3'])
     expect(client.getQueryData(meKeys.blocked())).toEqual([])
   })
 

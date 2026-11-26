@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Room } from '../domain/room.js'
 import {
-  applyRoomPresence,
-  applyRoomStatus,
   defisSections,
   incomingRematch,
   isWaitingForViewer,
@@ -217,42 +215,6 @@ describe('roomsWaitingForViewer', () => {
   })
 })
 
-describe('applyRoomPresence', () => {
-  const room = (overrides: Partial<RoomView>): RoomView =>
-    ({
-      roomId: 'r1',
-      status: 'WAITING_PLAYERS',
-      vsBot: false,
-      canCancel: true,
-      initiatorPresent: false,
-      participantPresent: false,
-      ...overrides,
-    }) as RoomView
-  const at = '2026-11-16T10:00:00Z'
-
-  it('sets the opponent presence for an initiator and my own presence', () => {
-    expect(
-      applyRoomPresence([room({})], { roomId: 'r1', playerId: 'p2', present: true, at }, 'p1')?.[0]?.participantPresent,
-    ).toBe(true)
-    expect(
-      applyRoomPresence([room({})], { roomId: 'r1', playerId: 'p1', present: true, at }, 'p1')?.[0]?.initiatorPresent,
-    ).toBe(true)
-  })
-
-  it('sets the initiator presence for a guest viewer', () => {
-    const next = applyRoomPresence(
-      [room({ canCancel: false, initiatorPresent: true })],
-      { roomId: 'r1', playerId: 'p1', present: false, at },
-      'p2',
-    )
-    expect(next?.[0]?.initiatorPresent).toBe(false)
-  })
-
-  it('returns undefined for an unknown room', () => {
-    expect(applyRoomPresence([room({})], { roomId: 'r9', playerId: 'p2', present: true, at }, 'p1')).toBeUndefined()
-  })
-})
-
 describe('Défis', () => {
   const view = (overrides: Partial<RoomView>) =>
     ({
@@ -285,23 +247,6 @@ describe('Défis', () => {
   it('finds the rematch waiting for an answer', () => {
     expect(incomingRematch([view({}), view({ roomId: 'rematch', origin: 'REMATCH' })])?.roomId).toBe('rematch')
     expect(incomingRematch([view({ origin: 'REMATCH', canCancel: true })])).toBeUndefined()
-  })
-
-  it('applies a pushed status: accepted stays, ended or launched leaves, unknown asks for a reload', () => {
-    const at = '2026-11-16T10:00:00Z'
-    expect(
-      applyRoomStatus([view({})], {
-        roomId: 'r1',
-        status: 'WAITING_PLAYERS',
-        expiresAt: '2026-11-17T10:00:00Z',
-        at,
-      })?.[0],
-    ).toMatchObject({
-      status: 'WAITING_PLAYERS',
-      expiresAt: '2026-11-17T10:00:00Z',
-    })
-    expect(applyRoomStatus([view({})], { roomId: 'r1', status: 'DECLINED', expiresAt: null, at })).toEqual([])
-    expect(applyRoomStatus([view({})], { roomId: 'r9', status: 'INVITED', expiresAt: null, at })).toBeUndefined()
   })
 
   it('pushes the invitation reminder 10 minutes away', () => {

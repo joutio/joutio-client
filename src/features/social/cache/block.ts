@@ -5,7 +5,7 @@ import { meKeys } from '../../me/query/keys.js'
 import { changeProfile, shiftProfileCounts } from '../../profile/cache/profile.js'
 import { profileKeys } from '../../profile/query/keys.js'
 import type { UserRefView } from '../../profile/types.js'
-import { roomKeys } from '../../rooms/query/keys.js'
+import { removeRooms } from '../../rooms/cache/rooms.js'
 import type { RoomView } from '../../rooms/types.js'
 import { contactKeys } from '../query/keys.js'
 import { editContactLists, hasCard, insertCard, mapCards, removeCard, type Pages } from './contacts.js'
@@ -47,9 +47,7 @@ export function applyBlock(client: QueryClient, meId: string, userId: string, bl
     suspended: profile.suspended,
     premium: profile.premium,
   }
-  const rooms = client.getQueryData(roomKeys.mine())
-  const roomRemoval = rooms ? removeFrom(rooms, isOpenRoomWith(userId)) : undefined
-  if (roomRemoval) client.setQueryData(roomKeys.mine(), roomRemoval.items)
+  const roomRemoval = removeRooms(client, isOpenRoomWith(userId))
 
   return undoAll([
     changeProfile(client, userId, { blocked: true, following: false }),
@@ -72,9 +70,7 @@ export function applyBlock(client: QueryClient, meId: string, userId: string, bl
         revert: (current) => (hasCard(current, userId) ? current : insertCard(current, removed, list.sort)),
       }
     }),
-    roomRemoval
-      ? () => client.setQueryData(roomKeys.mine(), (current) => (current ? roomRemoval.restore(current) : current))
-      : nothingToUndo,
+    roomRemoval,
     blockedRef
       ? change(
           client,

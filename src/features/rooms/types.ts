@@ -62,17 +62,6 @@ export interface DefisSections {
   waiting: RoomView[]
 }
 
-/**
- * Changement d'étape d'une salle du joueur (`ROOM_STATUS` sur son flux personnel) : défi reçu ou envoyé, accepté,
- * refusé, annulé, expiré, partie créée. Éphémère, indépendant de l'inbox et des préférences.
- */
-export interface RoomStatusChange {
-  roomId: string
-  status: RoomStatus
-  expiresAt: string | null
-  at: string
-}
-
 /** Refus d'entrée dans une salle, poussé sur `/user/queue/room-presence`. */
 export type JoinRefusal = 'FULL' | 'NOT_INVITED' | 'UNAVAILABLE' | 'GONE'
 
@@ -90,17 +79,6 @@ export interface ReminderState {
   available: boolean
   /** Fin de la cadence du viewer ; `null` quand aucune relance récente ne la déclenche. */
   cooldownEndsAt: number | null
-}
-
-/**
- * Présence d'un joueur dans un salon, poussée sur le flux personnel de l'autre joueur (`ROOM_PRESENCE`, éphémère,
- * hors inbox) : le client relit ses salons.
- */
-export interface RoomPresence {
-  roomId: string
-  playerId: string
-  present: boolean
-  at: string
 }
 
 /** Données pures d'une salle : la forme de l'état porté par `Room`. */

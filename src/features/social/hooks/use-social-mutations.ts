@@ -28,7 +28,7 @@ export function useBlockPlayer(meId: string, userId: string) {
       meKeys.account(),
       meKeys.blocked(),
       contactKeys.lists(),
-      roomKeys.mine(),
+      roomKeys.mines(),
     ],
     apply: (client, block) => applyBlock(client, meId, userId, block),
   })

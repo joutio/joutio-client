@@ -7,10 +7,6 @@ import type { MatchmakingEvent } from '../domain/matchmaking-event.js'
 
 /** Lectures des salles et de l'appariement. */
 
-export async function getMyRooms(http: HttpClient, signal?: AbortSignalLike): Promise<RoomView[]> {
-  return http.get<RoomView[]>('/api/rooms/mine', { signal })
-}
-
 export async function getRoom(http: HttpClient, roomId: string, signal?: AbortSignalLike): Promise<RoomView> {
   return http.get<RoomView>(`/api/rooms/${segment(roomId)}`, { signal })
 }
