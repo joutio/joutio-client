@@ -1,3 +1,15 @@
+## [13.0.0](https://github.com/joutio/joutio-client/compare/v12.0.1...v13.0.0) (2026-11-26)
+
+### ⚠ BREAKING CHANGES
+
+* **rooms:** the room hooks take the player id, GET /api/rooms/mine
+is no longer read and the RoomPresence and RoomStatusChange types are
+gone.
+
+### Features
+
+* **rooms:** my rooms as a live view ([41e5351](https://github.com/joutio/joutio-client/commit/41e53510129ac71369ba104a9ecebe2ceb5858a6))
+
 ## [12.0.1](https://github.com/joutio/joutio-client/compare/v12.0.0...v12.0.1) (2026-11-25)
 
 ### Bug Fixes
